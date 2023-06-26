@@ -334,28 +334,6 @@ class Main {
 
 const main: Main = new Main();
 
-// main.gerarGrafo("matriz");
-
-// main.addRandomArestas();
-
-// main.printAllGrafos();
-
-// main.printGrauTotal();
-
-// main.changeGrafosEstrutura("adjascente");
-
-// main.printAllGrafos();
-
-// main.printGrauTotal();
-
-// main.removeRandomArestas();
-
-// main.changeGrafosEstrutura("matriz");
-
-// main.printAllGrafos();
-
-// main.printGrauTotal();
-
 const v1: Grafo = new Grafo(0, "v1");
 const v2: Grafo = new Grafo(1, "v2");
 const v3: Grafo = new Grafo(2, "v3");
@@ -383,19 +361,19 @@ console.log("=====================================");
 
 main.printGrafo("matriz", new Array(v1, v2, v3, v4, v5));
 
-// e1.addArestaBidirecional(e2);
-// e1.addArestaBidirecional(e3);
-// e1.addArestaBidirecional(e4);
-// e1.addArestaBidirecional(e5);
-// e2.addArestaBidirecional(e3);
-// e2.addArestaBidirecional(e4);
-// e2.addArestaBidirecional(e5);
-// e3.addArestaBidirecional(e4);
-// e3.addArestaBidirecional(e5);
-// e4.addArestaBidirecional(e5);
+e1.addArestaBidirecional(e2);
+e1.addArestaBidirecional(e3);
+e1.addArestaBidirecional(e4);
+e1.addArestaBidirecional(e5);
+e2.addArestaBidirecional(e3);
+e2.addArestaBidirecional(e4);
+e2.addArestaBidirecional(e5);
+e3.addArestaBidirecional(e4);
+e3.addArestaBidirecional(e5);
+e4.addArestaBidirecional(e5);
 
-// console.log("\n=====================================");
-// console.log("======         GRAFO 2         ======");
-// console.log("=====================================");
+console.log("\n=====================================");
+console.log("======         GRAFO 2         ======");
+console.log("=====================================");
 
-// main.printGrafo("adjascente", new Array(e1, e2, e3, e4, e5));
+main.printGrafo("adjascente", new Array(e1, e2, e3, e4, e5));
