@@ -19,8 +19,7 @@
   - Grafos e suas propriedades detalhadas
   - Grau total 
   - Aretas total
-  - Estruturas
-
+  - Estrutura
 - Método na classe Main para criar um grafo completo.
 
 > Foi criado pensando na possibilidade de imprimir e manipular os subgrafos existentes do grafo inteiro
