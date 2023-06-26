@@ -114,7 +114,7 @@ class Grafo {
   }
 
   private hasArestaMatriz(grafo: Grafo): boolean {
-    return this.arestasMat[this.indice][grafo.getIndice()][1] !== 0;
+    return this.arestasMat[this.indice][grafo.getIndice()] !== undefined;
   }
 
   private hasArestaAdj(grafo: Grafo): boolean {
@@ -155,6 +155,30 @@ class Grafo {
 }
 
 class Main {
+  private grafos: Grafo[] = new Array<Grafo>();
+
+  public getGrafos(): Grafo[] {
+    return this.grafos;
+  }
+
+  public generateCompleteGrafo(qtd: number, name: string): void {
+    const arrayFrom = Array.from(Array(qtd).keys());
+
+    const grafos: Grafo[] = arrayFrom.map((index: number) => {
+      return new Grafo(index, name + index);
+    });
+
+    grafos.forEach((grafo: Grafo) => {
+      grafos.forEach((grafo2: Grafo) => {
+        if (grafo !== grafo2 && !grafo.hasArestaBidirecional(grafo2)) {
+          grafo.addArestaBidirecional(grafo2);
+        }
+      });
+    })
+
+    this.grafos = grafos;
+  }
+
   public addRandomArestas(grafos: Grafo[]): void {
     grafos.forEach((grafo: Grafo) => {
       const randomNumber = Math.random();
@@ -334,46 +358,7 @@ class Main {
 
 const main: Main = new Main();
 
-const v1: Grafo = new Grafo(0, "v1");
-const v2: Grafo = new Grafo(1, "v2");
-const v3: Grafo = new Grafo(2, "v3");
-const v4: Grafo = new Grafo(3, "v4");
-const v5: Grafo = new Grafo(4, "v5");
+main.generateCompleteGrafo(4, 'vertice')
 
-const e1: Grafo = new Grafo(0, "e1");
-const e2: Grafo = new Grafo(1, "e2");
-const e3: Grafo = new Grafo(2, "e3");
-const e4: Grafo = new Grafo(3, "e4");
-const e5: Grafo = new Grafo(4, "e5");
-
-v1.addArestaBidirecional(v2);
-v2.addArestaBidirecional(v3);
-v2.addArestaBidirecional(v4);
-v2.addArestaBidirecional(v5);
-v2.addArestaBidirecional(v5);
-v3.addArestaBidirecional(v3);
-v3.addArestaBidirecional(v4);
-v4.addArestaBidirecional(v5);
-
-console.log("=====================================");
-console.log("======         GRAFO 1         ======");
-console.log("=====================================");
-
-main.printGrafo("matriz", new Array(v1, v2, v3, v4, v5));
-
-e1.addArestaBidirecional(e2);
-e1.addArestaBidirecional(e3);
-e1.addArestaBidirecional(e4);
-e1.addArestaBidirecional(e5);
-e2.addArestaBidirecional(e3);
-e2.addArestaBidirecional(e4);
-e2.addArestaBidirecional(e5);
-e3.addArestaBidirecional(e4);
-e3.addArestaBidirecional(e5);
-e4.addArestaBidirecional(e5);
-
-console.log("\n=====================================");
-console.log("======         GRAFO 2         ======");
-console.log("=====================================");
-
-main.printGrafo("adjascente", new Array(e1, e2, e3, e4, e5));
+main.printGrafo("matriz", main.getGrafos());
+main.printGrafo("adjascente", main.getGrafos());
