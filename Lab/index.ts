@@ -3,16 +3,15 @@ import { Estruturas, Grafo } from "./grafo";
 
 const main: Main = new Main();
 
-main.generateCompleteGrafo(4, 'vertice')
-
 console.log('========================')
 console.log("= Matriz de Adjacencia =");
 console.log('========================')
 
-main.printGrafo("matriz", main.getGrafos());
+main.generateKOrderGrafo(5, 4, 'vertice', "matriz")
 
 console.log('\n\n===========================')
 console.log("= Estrutura de Adjacencia =");
 console.log('===========================')
 
-main.printGrafo("adjascente", main.getGrafos());
+main.generateKOrderGrafo(4, 3, 'vertice', "matriz")
+

@@ -5,5 +5,6 @@
 
 - Projeto na linguagem TypeScript
   - Para compilação é necessário instalação do node e do pacote ts-node
+  - Executar o arquivo index.ts
 
 > Código em colaboração com colega de classe Marlisson Monte
