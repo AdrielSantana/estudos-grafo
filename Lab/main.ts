@@ -1,12 +1,29 @@
 import { Estruturas, Grafo } from "./grafo";
 
 export class Main {
+  public isBiPartido(conjuntoX: Grafo[], conjuntoY: Grafo[]): boolean {
+    const checkConjunto = (conjunto: Grafo[]) => {
+      for (const grafo of conjunto) {
+        for (const aresta of grafo.getArestasAdj()) {
+          if(conjunto.includes(aresta)){
+            return false
+          }
+        }
+      }
+      return true;
+    };
+
+    const isConjuntoX = checkConjunto(conjuntoX);
+    const isConjuntoY = checkConjunto(conjuntoY);
+
+    return isConjuntoX && isConjuntoY;
+  }
+
   public generateKOrderGrafo(
     qtdVertices: number,
     grau: number,
-    name: string,
-    estrutura: Estruturas
-  ) {
+    name: string
+  ): Grafo[] {
     const arrayFrom = Array.from(Array(qtdVertices).keys());
 
     const grafos: Grafo[] = arrayFrom.map((index: number) => {
@@ -32,20 +49,15 @@ export class Main {
         }
       }
     } else {
-      console.log(
+      throw new Error(
         `⚠️ Não é possível criar um grafo K-Regular com ${qtdVertices} vertices com valor K = ${grau}⚠️`
       );
-      return;
     }
 
-    this.printGrafo(estrutura, grafos);
+    return grafos;
   }
 
-  public generateCompleteGrafo(
-    qtdVertices: number,
-    name: string,
-    estrutura: Estruturas
-  ): void {
+  public generateCompleteGrafo(qtdVertices: number, name: string): Grafo[] {
     const arrayFrom = Array.from(Array(qtdVertices).keys());
 
     const grafos: Grafo[] = arrayFrom.map((index: number) => {
@@ -60,7 +72,7 @@ export class Main {
       });
     });
 
-    this.printGrafo(estrutura, grafos);
+    return grafos;
   }
 
   public addRandomArestas(grafos: Grafo[]): void {
@@ -96,8 +108,6 @@ export class Main {
   }
 
   public printGrafo(estrutura: Estruturas, grafos: Array<Grafo>): void {
-    const arrayFrom = Array.from(Array(grafos.length).keys());
-
     const grafosImpares = grafos.filter((grafo: Grafo) => {
       return grafo.getGrau(estrutura) % 2 !== 0;
     });
@@ -106,14 +116,14 @@ export class Main {
       return grafo.getGrau(estrutura) % 2 === 0;
     });
 
-    console.log("Vertices Impares:");
+    console.log("\nVertices Impares:");
     grafosImpares.forEach((grafo: Grafo) => {
       console.log("\nIndice: ", grafo.getIndice());
       console.log("Nome: ", grafo.getName());
       console.log("Grau: ", grafo.getGrau(estrutura));
       console.log("");
     });
-    console.log("Vertices Pares:");
+    console.log("\nVertices Pares:");
     grafosPares.forEach((grafo: Grafo) => {
       console.log("\nIndice: ", grafo.getIndice());
       console.log("Nome: ", grafo.getName());

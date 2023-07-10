@@ -114,7 +114,10 @@ export class Grafo {
   }
 
   private hasArestaMatriz(grafo: Grafo): boolean {
-    return this.arestasMat[this.indice][grafo.getIndice()] !== undefined;
+    if (this.arestasMat[this.indice][grafo.getIndice()] !== undefined) {
+      return this.arestasMat[this.indice][grafo.getIndice()][0] === grafo;
+    }
+    return false
   }
 
   private hasArestaAdj(grafo: Grafo): boolean {
