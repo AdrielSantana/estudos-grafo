@@ -5,8 +5,8 @@ export class Main {
     const checkConjunto = (conjunto: Grafo[]) => {
       for (const grafo of conjunto) {
         for (const aresta of grafo.getArestasAdj()) {
-          if(conjunto.includes(aresta)){
-            return false
+          if (conjunto.includes(aresta)) {
+            return false;
           }
         }
       }
@@ -264,5 +264,58 @@ export class Main {
     });
 
     return mergedMatrix;
+  }
+
+  public depthSearch(root: Grafo): Grafo[] {
+    const visitedNodes: Grafo[] = [];
+    const nodePath: Grafo[] = [];
+
+    const search = (grafo: Grafo) => {
+      nodePath.push(grafo);
+      const visitedIndex = visitedNodes.indexOf(grafo);
+      const isGrafoVisited = visitedIndex === -1 ? false : true;
+
+      if (!isGrafoVisited) {
+        visitedNodes.push(grafo);
+      }
+
+      const edges = grafo.getArestasAdj();
+
+      if (visitedIndex === 0) {
+        const areEdgesAvaiable: boolean[] = [];
+        for (const edge of edges) {
+          const isEdgeAvaiable = !visitedNodes.includes(edge);
+          areEdgesAvaiable.push(isEdgeAvaiable);
+        }
+
+        let everyEdgeIsNotAvaiable = true;
+
+        for (const edge of areEdgesAvaiable) {
+          if (edge == true) {
+            everyEdgeIsNotAvaiable = false;
+            break;
+          }
+        }
+
+        if (everyEdgeIsNotAvaiable) {
+          return;
+        }
+      }
+
+      for (const edge of edges) {
+        if (!visitedNodes.includes(edge)) {
+          search(edge);
+          return;
+        }
+      }
+
+      const newVisitedIndex = nodePath.indexOf(grafo);
+      search(nodePath[newVisitedIndex - 1]);
+      return;
+    };
+
+    search(root);
+
+    return visitedNodes;
   }
 }

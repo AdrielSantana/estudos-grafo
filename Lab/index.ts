@@ -3,51 +3,42 @@ import { Main } from "./main";
 
 const main: Main = new Main();
 
-console.log("========================");
-console.log("==== Grafo Completo ====");
-console.log("========================");
+const v1 = new Grafo(1, "v1");
+const v2 = new Grafo(2, "v2");
+const v3 = new Grafo(3, "v3");
+const v4 = new Grafo(4, "v4");
+const v5 = new Grafo(5, "v5");
+const v6 = new Grafo(6, "v6");
+const v7 = new Grafo(7, "v7");
+const v8 = new Grafo(8, "v8");
+const v9 = new Grafo(9, "v9");
+const v10 = new Grafo(10, "v10");
+const v11 = new Grafo(11, "v11");
 
-const grafoCompleto = main.generateCompleteGrafo(5, "vC");
+v1.addArestaBidirecional(v2);
+v1.addArestaBidirecional(v3);
+v1.addArestaBidirecional(v4);
 
-main.printGrafo("matriz", grafoCompleto);
+v2.addArestaBidirecional(v5);
+v2.addArestaBidirecional(v6);
 
-console.log("\n\n===========================");
-console.log("===== Grafo K-Regular =====");
-console.log("===========================");
+v3.addArestaBidirecional(v7);
+v3.addArestaBidirecional(v8);
 
-const grafoKRegular = main.generateKOrderGrafo(4, 3, "vK");
+v4.addArestaBidirecional(v9);
 
-main.printGrafo("adjascente", grafoKRegular);
+v6.addArestaBidirecional(v10);
 
-console.log("\n\n============================");
-console.log("===== Grafo Bi-Partido =====");
-console.log("============================");
+v8.addArestaBidirecional(v11);
 
-const v0 = new Grafo(0, "vB0");
-const v1 = new Grafo(1, "vB1");
-const v2 = new Grafo(2, "vB2");
-const v3 = new Grafo(3, "vB3");
-const v4 = new Grafo(4, "vB4");
-const v5 = new Grafo(5, "vB5");
+const depthSearch = main.depthSearch(v1);
 
-v0.addArestaBidirecional(v1);
-v0.addArestaBidirecional(v2);
-v0.addArestaBidirecional(v3);
-v0.addArestaBidirecional(v4);
-v0.addArestaBidirecional(v5);
-
-const conjuntoX: Grafo[] =  [v1, v2, v3, v4, v5];
-const conjuntoXNames = conjuntoX.map((grafo) => grafo.getName());
-
-const conjuntoY: Grafo[] = [v0];
-const conjuntoYNames = conjuntoY.map((grafo) => grafo.getName());
-
-const isBiPartido: boolean = main.isBiPartido(conjuntoX, conjuntoY);
+const formmatNodes = depthSearch.map((node) => {
+  return node.getName();
+});
 
 console.log(
-  `O conjunto de vértices ${conjuntoXNames.join(
+  `A busca por profundidade passou pelo(s) vertice(s) ${formmatNodes.join(
     ", "
-  )} e o conjunto de vértices ${conjuntoYNames.join(", ")}${
-    isBiPartido ? "" : " não"
-  } são Bi-Partidos`
+  )}.`
 );
