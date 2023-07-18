@@ -270,18 +270,27 @@ export class Main {
     const visitedNodes: Grafo[] = [];
     const nodePath: Grafo[] = [];
 
+    const returnEdges: [Grafo, Grafo][] = [];
+    const treeEdges: [Grafo, Grafo][] = [];
+
+    let PECounter = 1;
+    let PSCounter = 1;
+    const PE: [Grafo, number][] = [];
+    const PS: [Grafo, number][] = [];
+
     const search = (grafo: Grafo) => {
       nodePath.push(grafo);
-      const visitedIndex = visitedNodes.indexOf(grafo);
-      const isGrafoVisited = visitedIndex === -1 ? false : true;
+      const visitedPathIndex = nodePath.indexOf(grafo);
+      const isGrafoVisited = visitedNodes.indexOf(grafo) === -1 ? false : true;
 
       if (!isGrafoVisited) {
         visitedNodes.push(grafo);
+        PE.push([grafo, PECounter++]);
       }
 
       const edges = grafo.getArestasAdj();
 
-      if (visitedIndex === 0) {
+      if (visitedPathIndex === 0) {
         const areEdgesAvaiable: boolean[] = [];
         for (const edge of edges) {
           const isEdgeAvaiable = !visitedNodes.includes(edge);
@@ -302,19 +311,69 @@ export class Main {
         }
       }
 
+      const newVisitedIndex = nodePath.indexOf(grafo);
+
       for (const edge of edges) {
         if (!visitedNodes.includes(edge)) {
+          treeEdges.push([grafo, edge]);
           search(edge);
           return;
+        } else if (
+          visitedNodes.includes(edge) &&
+          newVisitedIndex - nodePath.indexOf(edge) > 1 &&
+          nodePath[newVisitedIndex - 1] !== edge
+        ) {
+          returnEdges.push([grafo, edge]);
         }
       }
 
-      const newVisitedIndex = nodePath.indexOf(grafo);
+      PS.push([grafo, PSCounter++]);
       search(nodePath[newVisitedIndex - 1]);
       return;
     };
 
     search(root);
+
+    console.log(
+      "Caminho: ",
+      nodePath
+        .map((node) => {
+          return node.getName();
+        })
+        .join(" -> ")
+    );
+
+    console.log(
+      "\n\nArestas de RETORNO:\n",
+      returnEdges
+        .map(([source, target]) => {
+          return `${source.getName()} -> ${target.getName()}`;
+        })
+        .join("\n")
+    );
+
+    console.log(
+      "\n\nArestas de ARVORE:\n",
+      treeEdges
+        .map(([source, target]) => {
+          return `${source.getName()} -> ${target.getName()}`;
+        })
+        .join("\n")
+    );
+
+    console.log(
+      "\n\nPE:\n",
+      PE.map(([grafo, valor]) => {
+        return `${grafo.getName()} = ${valor}`;
+      }).join("\n")
+    );
+
+    console.log(
+      "\n\nPS:\n",
+      PS.map(([grafo, valor]) => {
+        return `${grafo.getName()} = ${valor}`;
+      }).join("\n")
+    );
 
     return visitedNodes;
   }

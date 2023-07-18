@@ -16,7 +16,6 @@ const v10 = new Grafo(10, "v10");
 const v11 = new Grafo(11, "v11");
 
 v1.addArestaBidirecional(v2);
-v1.addArestaBidirecional(v3);
 v1.addArestaBidirecional(v4);
 
 v2.addArestaBidirecional(v5);
@@ -31,14 +30,60 @@ v6.addArestaBidirecional(v10);
 
 v8.addArestaBidirecional(v11);
 
-const depthSearch = main.depthSearch(v1);
+console.log("=============================");
+console.log("=======    GRAFO 1    =======");
+console.log("=============================");
 
-const formmatNodes = depthSearch.map((node) => {
+const depthSearch1 = main.depthSearch(v1);
+
+const formmatNodes1 = depthSearch1.map((node) => {
   return node.getName();
 });
 
 console.log(
-  `A busca por profundidade passou pelo(s) vertice(s) ${formmatNodes.join(
+  `\n\nA busca por profundidade passou pelo(s) vertice(s) ${formmatNodes1.join(
     ", "
-  )}.`
+  )}.\n\n`
+);
+
+const a = new Grafo(0, "a");
+const b = new Grafo(1, "b");
+const c = new Grafo(2, "c");
+const d = new Grafo(3, "d");
+const e = new Grafo(4, "e");
+const f = new Grafo(5, "f");
+const g = new Grafo(6, "g");
+const h = new Grafo(7, "h");
+
+a.addArestaBidirecional(b);
+a.addArestaBidirecional(c);
+a.addArestaBidirecional(e);
+a.addArestaBidirecional(f);
+
+b.addArestaBidirecional(d);
+b.addArestaBidirecional(e);
+
+c.addArestaBidirecional(f);
+c.addArestaBidirecional(g);
+c.addArestaBidirecional(h);
+
+f.addArestaBidirecional(g);
+f.addArestaBidirecional(h);
+
+g.addArestaBidirecional(h);
+
+console.log("=============================");
+console.log("=======    GRAFO 2    =======");
+console.log("=============================");
+
+const depthSearch2 = main.depthSearch(a);
+
+const formmatNodes2 = depthSearch2.map((node) => {
+  return node.getName();
+});
+
+console.log(
+  `\n\nA busca por profundidade passou pelo(s) vertice(s) ${formmatNodes2.join(
+    ", "
+  )}.\n\n`
 );
