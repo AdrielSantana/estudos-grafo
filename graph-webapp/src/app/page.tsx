@@ -77,7 +77,7 @@ export default function Home() {
         <FloatButton
           icon={<QuestionCircleOutlined />}
           type="primary"
-          style={{ bottom: "6rem" }}
+          style={{ bottom: "9rem" }}
         />
       </Popover>
       <Footer>

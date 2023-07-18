@@ -1,6 +1,6 @@
-import { Grafo } from "@/hooks/Grafo";
+import { Grafo } from "@/model/Grafo";
 import { IUserEdge, IUserNode } from "@antv/graphin";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 const vertice0 = new Grafo(0, "v0");
 const vertice1 = new Grafo(1, "v1");
@@ -11,39 +11,50 @@ const vertice5 = new Grafo(5, "v5");
 
 const vertices = [vertice0, vertice1, vertice2, vertice3, vertice4, vertice5];
 
+const formmatedNodes = (grafos: Grafo[]): IUserNode[] => {
+  return grafos.map((vertice) => {
+    return {
+      id: vertice.getIndice().toString(),
+      style: {
+        label: {
+          value: vertice.getName(),
+        },
+      },
+    };
+  });
+};
+
+const formmatedEdges = (grafos: Grafo[]): IUserEdge[] => {
+  return grafos.flatMap((vertice) => {
+    return vertice.getArestasAdj().map((aresta) => {
+      return {
+        source: vertice.getIndice().toString(),
+        target: aresta.getIndice().toString(),
+      };
+    });
+  });
+};
+
 export const useGrafos = () => {
   const [grafos, setGrafos] = useState<Grafo[]>(vertices);
-  const [nodes, setNodes] = useState<IUserNode[]>();
-  const [edges, setEdges] = useState<IUserEdge[]>();
+  const [nodes, setNodes] = useState<IUserNode[]>(formmatedNodes(grafos));
+  const [edges, setEdges] = useState<IUserEdge[]>(formmatedEdges(grafos));
+
+  const handleUpdateGrafo = (grafo: Grafo) => {
+    const grafoIndex = grafos.findIndex(
+      (vertice) => vertice.getIndice() === grafo.getIndice()
+    );
+    if (grafoIndex !== -1) {
+      const newGrafos = [...grafos];
+      newGrafos[grafoIndex] = grafo;
+      setGrafos(newGrafos);
+    }
+  };
 
   useEffect(() => {
     setNodes(formmatedNodes(grafos));
     setEdges(formmatedEdges(grafos));
   }, [grafos]);
 
-  const formmatedNodes = (grafos: Grafo[]): IUserNode[] => {
-    return grafos.map((vertice) => {
-      return {
-        id: vertice.getIndice().toString(),
-        style: {
-          label: {
-            value: vertice.getName(),
-          },
-        },
-      };
-    });
-  };
-
-  const formmatedEdges = (grafos: Grafo[]): IUserEdge[] => {
-    return grafos.flatMap((vertice) => {
-      return vertice.getArestasAdj().map((aresta) => {
-        return {
-          source: vertice.getIndice().toString(),
-          target: aresta.getIndice().toString(),
-        };
-      });
-    });
-  };
-
-  return { nodes, edges, grafos, setGrafos };
+  return { nodes, edges, grafos, handleUpdateGrafo };
 };
