@@ -16,6 +16,8 @@ import {
   ArrowLeftOutlined,
   ArrowsAltOutlined,
   CloseOutlined,
+  PlusOutlined,
+  ScissorOutlined
 } from "@ant-design/icons";
 import { Grafo } from "@/model/Grafo";
 import { Item } from "@antv/graphin-components/lib/ContextMenu/Menu";
@@ -25,12 +27,16 @@ const { Tooltip, ContextMenu } = Components;
 const { Menu } = ContextMenuComponent;
 
 type Props = {
-  updateGrafo: (grafo: any) => void;
+  handleUpdateGrafo: (grafos?: Grafo[]) => void;
   grafos: Grafo[];
   verticeName: string;
 };
 
-export const HandleGraph = ({ grafos, updateGrafo, verticeName }: Props) => {
+export const HandleGraph = ({
+  grafos,
+  handleUpdateGrafo,
+  verticeName,
+}: Props) => {
   const { message } = App.useApp();
   const { apis } = useContext(GraphinContext);
 
@@ -41,7 +47,7 @@ export const HandleGraph = ({ grafos, updateGrafo, verticeName }: Props) => {
     );
     if (vertice) {
       vertice.setName(verticeName);
-      updateGrafo(vertice);
+      handleUpdateGrafo();
     }
   };
 
@@ -55,7 +61,30 @@ export const HandleGraph = ({ grafos, updateGrafo, verticeName }: Props) => {
     );
     if (sourceVertice && targetVertice) {
       sourceVertice.removeArestaUnidirecional(targetVertice);
-      updateGrafo(sourceVertice);
+      handleUpdateGrafo();
+    }
+  };
+
+  const handleRemoveNode = (data: IUserNode) => {
+    const { id } = data;
+    const vertice = grafos.find(
+      (vertice) => vertice.getIndice() === parseInt(id)
+    );
+    if (vertice) {
+      const verticeId = grafos.indexOf(vertice);
+      grafos.splice(verticeId, 1);
+      for (const grafo of grafos) {
+        if (grafo.hasArestaUnidirecional(vertice)) {
+          const arestas = [...grafo.getArestasAdj()];
+          console.log(arestas);
+          for (const aresta of arestas) {
+            if (aresta == vertice) {
+              grafo.removeArestaUnidirecional(vertice);
+            }
+          }
+        }
+      }
+      handleUpdateGrafo();
     }
   };
 
@@ -76,9 +105,15 @@ export const HandleGraph = ({ grafos, updateGrafo, verticeName }: Props) => {
       case "edit-name":
         handleNameChange(data);
         break;
+      case "remove-node":
+        handleRemoveNode(data);
       default:
         break;
     }
+  };
+
+  const handleAddNode = (itemProps: ContextMenuValue, verticeName: string) => {
+    const { x, y } = itemProps;
   };
 
   const handleAddEdge = (
@@ -110,7 +145,7 @@ export const HandleGraph = ({ grafos, updateGrafo, verticeName }: Props) => {
         } else {
           sourceVertice.addArestaUnidirecional(sourceVertice);
         }
-        updateGrafo(sourceVertice);
+        handleUpdateGrafo();
       }
       return;
     }
@@ -139,7 +174,7 @@ export const HandleGraph = ({ grafos, updateGrafo, verticeName }: Props) => {
       } else {
         sourceVertice.addArestaUnidirecional(targetVertice);
       }
-      updateGrafo(sourceVertice);
+      handleUpdateGrafo();
     }
   };
 
@@ -154,6 +189,11 @@ export const HandleGraph = ({ grafos, updateGrafo, verticeName }: Props) => {
               icon: <EditOutlined />,
               name: "Editar Nome",
             },
+            {
+              key: "remove-node",
+              icon: <CloseOutlined />,
+              name: "Remover Vértice",
+            },
           ]}
           onChange={(item, data) => {
             handleNodeUpdate(data, item);
@@ -166,7 +206,7 @@ export const HandleGraph = ({ grafos, updateGrafo, verticeName }: Props) => {
           options={[
             {
               key: "remove-edge",
-              icon: <CloseOutlined />,
+              icon: <ScissorOutlined />,
               name: "Remover Aresta",
             },
           ]}
@@ -183,6 +223,14 @@ export const HandleGraph = ({ grafos, updateGrafo, verticeName }: Props) => {
           return (
             <MenuComponent
               items={[
+                {
+                  key: "add-node",
+                  icon: <PlusOutlined />,
+                  label: "Adicionar Vertice",
+                  onClick: () => {
+                    handleAddNode(itemProps, verticeName);
+                  },
+                },
                 {
                   key: "add-ascending-edge",
                   icon: <ArrowRightOutlined />,

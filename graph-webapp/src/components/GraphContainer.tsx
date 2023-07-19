@@ -20,10 +20,6 @@ const GraphContainer = ({ verticeName, layoutType }: Props) => {
     loop: 6,
   });
 
-  const updateGrafo = (grafo: Grafo) => {
-    handleUpdateGrafo(grafo);
-  };
-
   return (
     <Graphin
       containerId="Graphin"
@@ -56,7 +52,7 @@ const GraphContainer = ({ verticeName, layoutType }: Props) => {
     >
       <HandleGraph
         verticeName={verticeName}
-        updateGrafo={updateGrafo}
+        handleUpdateGrafo={handleUpdateGrafo}
         grafos={grafos}
       />
     </Graphin>

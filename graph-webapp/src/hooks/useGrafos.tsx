@@ -51,13 +51,10 @@ export const useGrafos = () => {
   const [nodes, setNodes] = useState<IUserNode[]>(formmatedNodes(grafos));
   const [edges, setEdges] = useState<IUserEdge[]>(formmatedEdges(grafos));
 
-  const handleUpdateGrafo = (grafo: Grafo) => {
-    const grafoIndex = grafos.findIndex(
-      (vertice) => vertice.getIndice() === grafo.getIndice()
-    );
-    if (grafoIndex !== -1) {
-      const newGrafos = [...grafos];
-      newGrafos[grafoIndex] = grafo;
+  const handleUpdateGrafo = (newGrafos?: Grafo[]) => {
+    if (!newGrafos) {
+      setGrafos([...grafos]);
+    } else {
       setGrafos(newGrafos);
     }
   };
