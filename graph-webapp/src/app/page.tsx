@@ -2,15 +2,39 @@
 
 import GraphContainer from "@/components/GraphContainer";
 
-import { Layout, Menu, Popover, Space, Typography } from "antd";
+import { Button, Layout, List, Menu, Popover, Space, Typography } from "antd";
 import { useState } from "react";
 
 import { FloatButton, Input } from "antd";
-import { QuestionCircleOutlined, GithubOutlined } from "@ant-design/icons";
+import {
+  QuestionCircleOutlined,
+  GithubOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import { Footer } from "antd/es/layout/layout";
 import { App } from "antd";
+import { Grafo } from "@/model/Grafo";
+import { GrafoContext, useGrafos } from "@/hooks/useGrafos";
 
 const { Header, Content } = Layout;
+
+interface IHelpData {
+  title: string;
+  description: string;
+}
+
+const HELP_DATA: IHelpData[] = [
+  {
+    title: "Exibição",
+    description:
+      "Utilize o Menu acima para escolher qual forma quer exibir o Grafo",
+  },
+  {
+    title: "Manipulação",
+    description:
+      "Clique com o botão direito em cima do Vértice, Aresta ou Plano para exibir as opções.",
+  },
+];
 
 const OPTIONS: {
   label: string;
@@ -46,9 +70,17 @@ const OPTIONS: {
   },
 ];
 
-export default function Home() {
+const Page = () => {
   const [layoutType, setLayoutType] = useState("preset");
   const [verticeName, setVerticeName] = useState("v5");
+  const { grafos, handleUpdateGrafo } = useGrafos();
+
+  const handleAddNode = (verticeName: string) => {
+    const newIndice = grafos.length;
+    const newGrafo = new Grafo(newIndice, verticeName);
+    grafos.push(newGrafo);
+    handleUpdateGrafo();
+  };
 
   return (
     <App className="layout">
@@ -75,12 +107,18 @@ export default function Home() {
         <Popover
           placement="leftBottom"
           content={
-            <>
-              <Typography.Text>
-                Para adicionar um vértice, <br />
-                clique em um espaço vazio do grafo.
-              </Typography.Text>
-            </>
+            <List
+              style={{ width: 250 }}
+              dataSource={HELP_DATA}
+              renderItem={(item: IHelpData) => (
+                <List.Item>
+                  <Space direction="vertical">
+                    <Typography.Text strong>{item.title}</Typography.Text>
+                    <Typography.Text>{item.description}</Typography.Text>
+                  </Space>
+                </List.Item>
+              )}
+            />
           }
           title="Ajuda"
         >
@@ -115,8 +153,24 @@ export default function Home() {
             }}
             style={{ width: 200, backgroundColor: "#e7ecef" }}
           />
+          <Button
+            shape="circle"
+            onClick={() => {
+              handleAddNode(verticeName);
+            }}
+          >
+            <PlusOutlined />
+          </Button>
         </Footer>
       </Layout>
     </App>
+  );
+};
+
+export default function Home() {
+  return (
+    <GrafoContext>
+      <Page />
+    </GrafoContext>
   );
 }

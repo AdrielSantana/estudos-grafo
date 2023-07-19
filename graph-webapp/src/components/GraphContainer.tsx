@@ -3,9 +3,6 @@
 import Graphin, { Behaviors, Utils } from "@antv/graphin";
 import { useGrafos } from "@/hooks/useGrafos";
 import { HandleGraph } from "./HandleGraph";
-import { Grafo } from "@/model/Grafo";
-
-const { ZoomCanvas, ActivateRelations } = Behaviors;
 
 type Props = {
   layoutType: string;
@@ -13,7 +10,7 @@ type Props = {
 };
 
 const GraphContainer = ({ verticeName, layoutType }: Props) => {
-  const { edges, nodes, grafos, handleUpdateGrafo } = useGrafos();
+  const { edges, nodes } = useGrafos();
 
   const proceededEdges = Utils.processEdges(edges, {
     poly: 30,
@@ -52,8 +49,6 @@ const GraphContainer = ({ verticeName, layoutType }: Props) => {
     >
       <HandleGraph
         verticeName={verticeName}
-        handleUpdateGrafo={handleUpdateGrafo}
-        grafos={grafos}
       />
     </Graphin>
   );

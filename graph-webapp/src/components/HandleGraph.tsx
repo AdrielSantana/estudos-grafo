@@ -6,6 +6,7 @@ import {
   ContextMenuValue,
   IUserEdge,
 } from "@antv/graphin";
+import { Main } from "@/model/Main";
 import { ContextMenu as ContextMenuComponent } from "@antv/graphin-components";
 import { EditOutlined } from "@ant-design/icons";
 import { useContext } from "react";
@@ -16,29 +17,25 @@ import {
   ArrowLeftOutlined,
   ArrowsAltOutlined,
   CloseOutlined,
-  PlusOutlined,
-  ScissorOutlined
+  ScissorOutlined,
 } from "@ant-design/icons";
-import { Grafo } from "@/model/Grafo";
 import { Item } from "@antv/graphin-components/lib/ContextMenu/Menu";
+import { useGrafos } from "@/hooks/useGrafos";
 
 const { Tooltip, ContextMenu } = Components;
 
 const { Menu } = ContextMenuComponent;
 
 type Props = {
-  handleUpdateGrafo: (grafos?: Grafo[]) => void;
-  grafos: Grafo[];
   verticeName: string;
 };
 
-export const HandleGraph = ({
-  grafos,
-  handleUpdateGrafo,
-  verticeName,
-}: Props) => {
+const main = new Main();
+
+export const HandleGraph = ({ verticeName }: Props) => {
   const { message } = App.useApp();
   const { apis } = useContext(GraphinContext);
+  const { grafos, handleUpdateGrafo } = useGrafos();
 
   const handleNameChange = (data: IUserNode) => {
     const { id } = data;
@@ -71,19 +68,7 @@ export const HandleGraph = ({
       (vertice) => vertice.getIndice() === parseInt(id)
     );
     if (vertice) {
-      const verticeId = grafos.indexOf(vertice);
-      grafos.splice(verticeId, 1);
-      for (const grafo of grafos) {
-        if (grafo.hasArestaUnidirecional(vertice)) {
-          const arestas = [...grafo.getArestasAdj()];
-          console.log(arestas);
-          for (const aresta of arestas) {
-            if (aresta == vertice) {
-              grafo.removeArestaUnidirecional(vertice);
-            }
-          }
-        }
-      }
+      main.completeRemoveNodeFromGraph(vertice, grafos);
       handleUpdateGrafo();
     }
   };
@@ -110,10 +95,6 @@ export const HandleGraph = ({
       default:
         break;
     }
-  };
-
-  const handleAddNode = (itemProps: ContextMenuValue, verticeName: string) => {
-    const { x, y } = itemProps;
   };
 
   const handleAddEdge = (
@@ -223,14 +204,6 @@ export const HandleGraph = ({
           return (
             <MenuComponent
               items={[
-                {
-                  key: "add-node",
-                  icon: <PlusOutlined />,
-                  label: "Adicionar Vertice",
-                  onClick: () => {
-                    handleAddNode(itemProps, verticeName);
-                  },
-                },
                 {
                   key: "add-ascending-edge",
                   icon: <ArrowRightOutlined />,

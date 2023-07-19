@@ -1,3 +1,5 @@
+import { createContext, useContext } from "react";
+
 import { Grafo } from "@/model/Grafo";
 import { IUserEdge, IUserNode } from "@antv/graphin";
 import { useEffect, useState } from "react";
@@ -46,17 +48,26 @@ const formmatedEdges = (grafos: Grafo[]): IUserEdge[] => {
   });
 };
 
-export const useGrafos = () => {
+type Props = {
+  children?: React.ReactNode;
+};
+
+const Context = createContext<IGrafosContext>({} as IGrafosContext);
+
+interface IGrafosContext {
+  nodes: IUserNode[];
+  edges: IUserEdge[];
+  grafos: Grafo[];
+  handleUpdateGrafo: () => void;
+}
+
+export const GrafoContext = ({ children }: Props) => {
   const [grafos, setGrafos] = useState<Grafo[]>(vertices);
   const [nodes, setNodes] = useState<IUserNode[]>(formmatedNodes(grafos));
   const [edges, setEdges] = useState<IUserEdge[]>(formmatedEdges(grafos));
 
-  const handleUpdateGrafo = (newGrafos?: Grafo[]) => {
-    if (!newGrafos) {
-      setGrafos([...grafos]);
-    } else {
-      setGrafos(newGrafos);
-    }
+  const handleUpdateGrafo = () => {
+    setGrafos([...grafos]);
   };
 
   useEffect(() => {
@@ -64,5 +75,20 @@ export const useGrafos = () => {
     setEdges(formmatedEdges(grafos));
   }, [grafos]);
 
-  return { nodes, edges, grafos, handleUpdateGrafo };
+  return (
+    <Context.Provider
+      value={{
+        edges,
+        grafos,
+        handleUpdateGrafo,
+        nodes,
+      }}
+    >
+      {children}
+    </Context.Provider>
+  );
+};
+
+export const useGrafos = () => {
+  return useContext(Context);
 };
