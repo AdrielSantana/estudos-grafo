@@ -377,4 +377,25 @@ export class Main {
 
     return visitedNodes;
   }
+
+  public completeRemoveNodeFromGraph(
+    nodeToRemove: Grafo,
+    grafos: Grafo[]
+  ): Grafo[] {
+    const verticeId = grafos.indexOf(nodeToRemove);
+    grafos.splice(verticeId, 1);
+    for (const grafo of grafos) {
+      if (grafo.hasArestaUnidirecional(nodeToRemove)) {
+        const arestas = [...grafo.getArestasAdj()];
+        console.log(arestas);
+        for (const aresta of arestas) {
+          if (aresta == nodeToRemove) {
+            grafo.removeArestaUnidirecional(nodeToRemove);
+          }
+        }
+      }
+    }
+
+    return grafos;
+  }
 }
