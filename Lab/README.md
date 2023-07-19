@@ -24,6 +24,7 @@
 - Método para criar grafo completo a partir de n vértices
 - Método para criar grafo K-Regular, recebendo n vértices e k grau para cada vértice
 - Método para checar se 2 conjuntos de vértices formam um grafo Bi-Partido
+- Método para fazer uma busca por profundidade no vértice fornecido
   
 
 > Foi criado pensando na possibilidade de imprimir e manipular os subgrafos existentes do grafo inteiro

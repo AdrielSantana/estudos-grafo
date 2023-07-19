@@ -5,8 +5,8 @@ export class Main {
     const checkConjunto = (conjunto: Grafo[]) => {
       for (const grafo of conjunto) {
         for (const aresta of grafo.getArestasAdj()) {
-          if(conjunto.includes(aresta)){
-            return false
+          if (conjunto.includes(aresta)) {
+            return false;
           }
         }
       }
@@ -264,5 +264,138 @@ export class Main {
     });
 
     return mergedMatrix;
+  }
+
+  public depthSearch(root: Grafo): Grafo[] {
+    const visitedNodes: Grafo[] = [];
+    const nodePath: Grafo[] = [];
+
+    const returnEdges: [Grafo, Grafo][] = [];
+    const treeEdges: [Grafo, Grafo][] = [];
+
+    let PECounter = 1;
+    let PSCounter = 1;
+    const PE: [Grafo, number][] = [];
+    const PS: [Grafo, number][] = [];
+
+    const search = (grafo: Grafo) => {
+      nodePath.push(grafo);
+      const visitedPathIndex = nodePath.indexOf(grafo);
+      const isGrafoVisited = visitedNodes.indexOf(grafo) === -1 ? false : true;
+
+      if (!isGrafoVisited) {
+        visitedNodes.push(grafo);
+        PE.push([grafo, PECounter++]);
+      }
+
+      const edges = grafo.getArestasAdj();
+
+      if (visitedPathIndex === 0) {
+        const areEdgesAvaiable: boolean[] = [];
+        for (const edge of edges) {
+          const isEdgeAvaiable = !visitedNodes.includes(edge);
+          areEdgesAvaiable.push(isEdgeAvaiable);
+        }
+
+        let everyEdgeIsNotAvaiable = true;
+
+        for (const edge of areEdgesAvaiable) {
+          if (edge == true) {
+            everyEdgeIsNotAvaiable = false;
+            break;
+          }
+        }
+
+        if (everyEdgeIsNotAvaiable) {
+          return;
+        }
+      }
+
+      const newVisitedIndex = nodePath.indexOf(grafo);
+
+      for (const edge of edges) {
+        if (!visitedNodes.includes(edge)) {
+          treeEdges.push([grafo, edge]);
+          search(edge);
+          return;
+        } else if (
+          visitedNodes.includes(edge) &&
+          newVisitedIndex - nodePath.indexOf(edge) > 1 &&
+          nodePath[newVisitedIndex - 1] !== edge
+        ) {
+          returnEdges.push([grafo, edge]);
+        }
+      }
+
+      PS.push([grafo, PSCounter++]);
+      search(nodePath[newVisitedIndex - 1]);
+      return;
+    };
+
+    search(root);
+
+    console.log(
+      "Caminho: ",
+      nodePath
+        .map((node) => {
+          return node.getName();
+        })
+        .join(" -> ")
+    );
+
+    console.log(
+      "\n\nArestas de RETORNO:\n",
+      returnEdges
+        .map(([source, target]) => {
+          return `${source.getName()} -> ${target.getName()}`;
+        })
+        .join("\n")
+    );
+
+    console.log(
+      "\n\nArestas de ARVORE:\n",
+      treeEdges
+        .map(([source, target]) => {
+          return `${source.getName()} -> ${target.getName()}`;
+        })
+        .join("\n")
+    );
+
+    console.log(
+      "\n\nPE:\n",
+      PE.map(([grafo, valor]) => {
+        return `${grafo.getName()} = ${valor}`;
+      }).join("\n")
+    );
+
+    console.log(
+      "\n\nPS:\n",
+      PS.map(([grafo, valor]) => {
+        return `${grafo.getName()} = ${valor}`;
+      }).join("\n")
+    );
+
+    return visitedNodes;
+  }
+
+  public completeRemoveNodeFromGraph(
+    nodeToRemove: Grafo,
+    grafos: Grafo[]
+  ): Grafo[] {
+    const verticeId = grafos.indexOf(nodeToRemove);
+    grafos.splice(verticeId, 1);
+    for (const grafo of grafos) {
+      if (grafo.hasArestaUnidirecional(nodeToRemove)) {
+        const arestas = [...grafo.getArestasAdj()];
+        console.log(arestas);
+        for (const aresta of arestas) {
+          if (aresta == nodeToRemove) {
+            grafo.removeArestaUnidirecional(nodeToRemove);
+          }
+        }
+      }
+    }
+
+    return grafos;
   }
 }
