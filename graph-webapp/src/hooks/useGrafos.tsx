@@ -8,10 +8,6 @@ const vertice2 = new Grafo(2, "v2");
 const vertice3 = new Grafo(3, "v3");
 const vertice4 = new Grafo(4, "v4");
 
-vertice0.addArestaUnidirecional(vertice1);
-vertice0.addArestaUnidirecional(vertice1);
-vertice0.addArestaUnidirecional(vertice0);
-
 const vertices = [vertice0, vertice1, vertice2, vertice3, vertice4];
 
 const formmatedNodes = (grafos: Grafo[]): IUserNode[] => {
