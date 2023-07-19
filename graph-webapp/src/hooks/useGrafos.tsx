@@ -7,9 +7,12 @@ const vertice1 = new Grafo(1, "v1");
 const vertice2 = new Grafo(2, "v2");
 const vertice3 = new Grafo(3, "v3");
 const vertice4 = new Grafo(4, "v4");
-const vertice5 = new Grafo(5, "v5");
 
-const vertices = [vertice0, vertice1, vertice2, vertice3, vertice4, vertice5];
+vertice0.addArestaUnidirecional(vertice1);
+vertice0.addArestaUnidirecional(vertice1);
+vertice0.addArestaUnidirecional(vertice0);
+
+const vertices = [vertice0, vertice1, vertice2, vertice3, vertice4];
 
 const formmatedNodes = (grafos: Grafo[]): IUserNode[] => {
   return grafos.map((vertice) => {
@@ -18,6 +21,12 @@ const formmatedNodes = (grafos: Grafo[]): IUserNode[] => {
       style: {
         label: {
           value: vertice.getName(),
+        },
+        keyshape: {
+          fill: "#6096BA",
+          stroke: "#6096BA",
+          fillOpacity: 0.3,
+          size: 30,
         },
       },
     };
@@ -30,6 +39,12 @@ const formmatedEdges = (grafos: Grafo[]): IUserEdge[] => {
       return {
         source: vertice.getIndice().toString(),
         target: aresta.getIndice().toString(),
+        style: {
+          keyshape: {
+            opacity: 0.3,
+            stroke: "#001529",
+          },
+        },
       };
     });
   });

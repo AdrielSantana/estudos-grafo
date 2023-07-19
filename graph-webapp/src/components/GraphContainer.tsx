@@ -1,19 +1,24 @@
 "use client";
 
-import Graphin, { Behaviors } from "@antv/graphin";
+import Graphin, { Behaviors, Utils } from "@antv/graphin";
 import { useGrafos } from "@/hooks/useGrafos";
 import { HandleGraph } from "./HandleGraph";
-import { useEffect, useState } from "react";
 import { Grafo } from "@/model/Grafo";
 
-const { ZoomCanvas } = Behaviors;
+const { ZoomCanvas, ActivateRelations } = Behaviors;
 
 type Props = {
   layoutType: string;
+  verticeName: string;
 };
 
-const GraphContainer = ({ layoutType }: Props) => {
+const GraphContainer = ({ verticeName, layoutType }: Props) => {
   const { edges, nodes, grafos, handleUpdateGrafo } = useGrafos();
+
+  const proceededEdges = Utils.processEdges(edges, {
+    poly: 30,
+    loop: 6,
+  });
 
   const updateGrafo = (grafo: Grafo) => {
     handleUpdateGrafo(grafo);
@@ -22,11 +27,38 @@ const GraphContainer = ({ layoutType }: Props) => {
   return (
     <Graphin
       containerId="Graphin"
-      data={{ nodes, edges }}
+      data={{ nodes, edges: proceededEdges }}
       layout={{ type: layoutType }}
+      defaultNode={{
+        // @ts-ignore
+        style: {
+          keyshape: {
+            fill: "#6096BA",
+            stroke: "#6096BA",
+            fillOpacity: 0.3,
+            size: 30,
+          },
+        },
+      }}
+      defaultEdge={{
+        // @ts-ignore
+        style: {
+          keyshape: {
+            opacity: 0.3,
+            stroke: "#001529",
+          },
+        },
+      }}
+      style={{ backgroundColor: "#fff" }}
+      enabledStack={true}
+      maxStep={10}
+      maxZoom={2}
     >
-      <HandleGraph updateGrafo={updateGrafo} grafos={grafos} />
-      <ZoomCanvas maxZoom={2} />
+      <HandleGraph
+        verticeName={verticeName}
+        updateGrafo={updateGrafo}
+        grafos={grafos}
+      />
     </Graphin>
   );
 };
