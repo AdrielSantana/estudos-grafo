@@ -3,87 +3,140 @@ import { Main } from "./main";
 
 const main: Main = new Main();
 
-const v1 = new Grafo(1, "v1");
-const v2 = new Grafo(2, "v2");
-const v3 = new Grafo(3, "v3");
-const v4 = new Grafo(4, "v4");
-const v5 = new Grafo(5, "v5");
-const v6 = new Grafo(6, "v6");
-const v7 = new Grafo(7, "v7");
-const v8 = new Grafo(8, "v8");
-const v9 = new Grafo(9, "v9");
-const v10 = new Grafo(10, "v10");
-const v11 = new Grafo(11, "v11");
+const uV = new Grafo(0, "u");
+const yV = new Grafo(1, "y");
+const vV = new Grafo(2, "v");
+const xV = new Grafo(3, "x");
+const wV = new Grafo(4, "w");
 
-v1.addArestaBidirecional(v2);
-v1.addArestaBidirecional(v4);
+uV.addArestaBidirecional(vV);
+uV.addArestaBidirecional(yV);
 
-v2.addArestaBidirecional(v5);
-v2.addArestaBidirecional(v6);
+yV.addArestaBidirecional(vV);
+yV.addArestaBidirecional(vV);
+yV.addArestaBidirecional(wV);
+yV.addArestaBidirecional(xV);
 
-v3.addArestaBidirecional(v7);
-v3.addArestaBidirecional(v8);
+vV.addArestaBidirecional(wV);
 
-v4.addArestaBidirecional(v9);
+xV.addArestaBidirecional(wV);
 
-v6.addArestaBidirecional(v10);
+const grafos = [xV, yV, vV, wV, uV];
 
-v8.addArestaBidirecional(v11);
+type edge = [source: number, target: number];
 
-console.log("=============================");
-console.log("=======    GRAFO 1    =======");
-console.log("=============================");
+const aE1: edge = [uV.getIndice(), vV.getIndice()];
+const aE2: edge = [vV.getIndice(), uV.getIndice()];
 
-const depthSearch1 = main.depthSearch(v1);
+const bE1: edge = [wV.getIndice(), vV.getIndice()];
+const bE2: edge = [vV.getIndice(), wV.getIndice()];
 
-const formmatNodes1 = depthSearch1.map((node) => {
-  return node.getName();
+const cE1: edge = [xV.getIndice(), wV.getIndice()];
+const cE2: edge = [wV.getIndice(), xV.getIndice()];
+
+const dE1: edge = [xV.getIndice(), yV.getIndice()];
+const dE2: edge = [yV.getIndice(), xV.getIndice()];
+
+const eE1: edge = [uV.getIndice(), yV.getIndice()];
+const eE2: edge = [yV.getIndice(), uV.getIndice()];
+
+const fE1: edge = [yV.getIndice(), vV.getIndice()];
+const fE2: edge = [vV.getIndice(), yV.getIndice()];
+
+const gE1: edge = [yV.getIndice(), vV.getIndice()];
+const gE2: edge = [vV.getIndice(), yV.getIndice()];
+
+const hE1: edge = [yV.getIndice(), wV.getIndice()];
+const hE2: edge = [wV.getIndice(), yV.getIndice()];
+
+const subGrafo1 = main.getSubGrafo({
+  grafos,
+  arestas: [aE1, aE2, eE1, eE2, fE1, fE2, gE1, gE2],
+  vertices: [uV.getIndice(), vV.getIndice(), yV.getIndice()],
 });
 
-console.log(
-  `\n\nA busca por profundidade passou pelo(s) vertice(s) ${formmatNodes1.join(
-    ", "
-  )}.\n\n`
-);
+console.log("==============================");
+console.log("=======SUBGRAFO PROPRIO=======");
+console.log("==============================");
 
-const a = new Grafo(0, "a");
-const b = new Grafo(1, "b");
-const c = new Grafo(2, "c");
-const d = new Grafo(3, "d");
-const e = new Grafo(4, "e");
-const f = new Grafo(5, "f");
-const g = new Grafo(6, "g");
-const h = new Grafo(7, "h");
+main.printGrafo("adjascente", subGrafo1);
 
-a.addArestaBidirecional(b);
-a.addArestaBidirecional(c);
-a.addArestaBidirecional(e);
-a.addArestaBidirecional(f);
-
-b.addArestaBidirecional(d);
-b.addArestaBidirecional(e);
-
-c.addArestaBidirecional(f);
-c.addArestaBidirecional(g);
-c.addArestaBidirecional(h);
-
-f.addArestaBidirecional(g);
-f.addArestaBidirecional(h);
-
-g.addArestaBidirecional(h);
-
-console.log("=============================");
-console.log("=======    GRAFO 2    =======");
-console.log("=============================");
-
-const depthSearch2 = main.depthSearch(a);
-
-const formmatNodes2 = depthSearch2.map((node) => {
-  return node.getName();
+const subGrafo2 = main.getSubGrafo({
+  grafos,
+  arestas: [eE1, eE2, fE1, fE2, gE1, gE2],
+  vertices: [uV.getIndice(), vV.getIndice(), yV.getIndice()],
 });
 
-console.log(
-  `\n\nA busca por profundidade passou pelo(s) vertice(s) ${formmatNodes2.join(
-    ", "
-  )}.\n\n`
+console.log("==============================");
+console.log("=======SUBGRAFO GERADOR=======");
+console.log("==============================");
+
+main.printGrafo("adjascente", subGrafo2);
+
+const X1 = [yV.getIndice(), vV.getIndice(), xV.getIndice(), uV.getIndice()];
+
+const subGrafo3 = main.getSubGrafo(
+  {
+    grafos,
+    arestas: [],
+    vertices: X1,
+  },
+  "vertice"
 );
+
+console.log("==============================");
+console.log("=====SUBGRAFO INDUZIDO X1=====");
+console.log("==============================");
+
+main.printGrafo("adjascente", subGrafo3);
+
+const X2 = [uV.getIndice(), wV.getIndice()];
+
+const subGrafo4 = main.getSubtractGrafo(
+  {
+    grafos,
+    arestas: [],
+    vertices: X2,
+  },
+  "vertice"
+);
+
+console.log("==============================");
+console.log("=========SUBTRACAO X2=========");
+console.log("==============================");
+
+main.printGrafo("adjascente", subGrafo4);
+
+const E1 = [aE1, aE2, cE1, cE2, eE1, eE2, gE1, gE2];
+
+const subGrafo5 = main.getSubGrafo(
+  {
+    grafos,
+    arestas: E1,
+    vertices: [],
+  },
+  "aresta"
+);
+
+console.log("==============================");
+console.log("==========SUBGRAFO E1=========");
+console.log("==============================");
+
+main.printGrafo("adjascente", subGrafo5);
+
+const E2 = [aE1, aE2, bE1, bE2, fE1, fE2];
+
+const subGrafo6 = main.getSubtractGrafo(
+  {
+    grafos,
+    arestas: E2,
+    vertices: [],
+  },
+  "aresta"
+);
+
+console.log("==============================");
+console.log("=========SUBTRACAO E2=========");
+console.log("==============================");
+
+main.printGrafo("adjascente", subGrafo6);
