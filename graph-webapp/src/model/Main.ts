@@ -1,6 +1,274 @@
 import { Estruturas, Grafo } from "./Grafo";
 
 export class Main {
+  public getSubtractGrafo(
+    {
+      grafos,
+      arestas,
+      vertices,
+    }: {
+      grafos: Grafo[];
+      arestas: [source: number, target: number][];
+      vertices: number[];
+    },
+    inducao: "aresta" | "vertice"
+  ): Grafo[] {
+    const subGrafo: Grafo[] = [];
+
+    switch (inducao) {
+      case "aresta":
+        for (const grafo of grafos) {
+          const grafoClone = grafo.clone();
+          subGrafo.push(grafoClone);
+        }
+
+        arestas.forEach(([source, target]) => {
+          const sourceGrafo = grafos.find(
+            (grafo) => grafo.getIndice() === source
+          );
+          const targetGrafo = grafos.find(
+            (grafo) => grafo.getIndice() === target
+          );
+
+          if (sourceGrafo && targetGrafo) {
+            if (sourceGrafo.hasArestaUnidirecional(targetGrafo)) {
+              sourceGrafo.removeArestaUnidirecional(targetGrafo);
+            }
+          }
+        });
+
+        return subGrafo;
+      case "vertice":
+        for (const grafo of grafos) {
+          const grafoClone = grafo.clone();
+          subGrafo.push(grafoClone);
+        }
+
+        vertices.forEach((vertice) => {
+          const verticeGrafo = grafos.find(
+            (grafo) => grafo.getIndice() === vertice
+          );
+
+          if (verticeGrafo) {
+            subGrafo.forEach((grafo) => {
+              const arestasAdj = grafo.getArestasAdj();
+
+              arestasAdj.forEach((arestaAdj) => {
+                const arestaAdjClone = arestaAdj.clone();
+                
+                if (arestaAdjClone.getIndice() === verticeGrafo.getIndice()) {
+                  while (grafo.hasArestaUnidirecional(arestaAdjClone)) {
+                    grafo.removeArestaUnidirecional(arestaAdjClone);
+                  }
+                }
+              });
+            });
+
+            const verticeToBeRemoved = subGrafo.find(
+              (grafo) => grafo.getIndice() === verticeGrafo.getIndice()
+            );
+
+            if (verticeToBeRemoved) {
+              subGrafo.splice(subGrafo.indexOf(verticeToBeRemoved), 1);
+            }
+          }
+        });
+
+        return subGrafo;
+      default:
+        return subGrafo;
+    }
+  }
+
+  public getSubGrafo(
+    {
+      grafos,
+      arestas,
+      vertices,
+    }: {
+      grafos: Grafo[];
+      arestas: [source: number, target: number][];
+      vertices: number[];
+    },
+    inducao?: "aresta" | "vertice"
+  ): Grafo[] {
+    const subGrafo: Grafo[] = [];
+
+    switch (inducao) {
+      case "aresta":
+        arestas.forEach(([source, target]) => {
+          const sourceGrafo = grafos.find(
+            (grafo) => grafo.getIndice() === source
+          );
+          const targetGrafo = grafos.find(
+            (grafo) => grafo.getIndice() === target
+          );
+
+          if (sourceGrafo && targetGrafo) {
+            const sourceGrafoClone = sourceGrafo.clone();
+            const targetGrafoClone = targetGrafo.clone();
+
+            sourceGrafoClone.setArestasAdj(new Array<Grafo>());
+            targetGrafoClone.setArestasAdj(new Array<Grafo>());
+
+            sourceGrafoClone.setArestasMat(
+              Array.from({ length: sourceGrafoClone.getIndice() + 1 }, () =>
+                Array.from({ length: sourceGrafoClone.getIndice() + 1 }, () => [
+                  null,
+                  0,
+                ])
+              )
+            );
+            targetGrafoClone.setArestasMat(
+              Array.from({ length: targetGrafoClone.getIndice() + 1 }, () =>
+                Array.from({ length: targetGrafoClone.getIndice() + 1 }, () => [
+                  null,
+                  0,
+                ])
+              )
+            );
+
+            if (sourceGrafo.hasArestaUnidirecional(targetGrafo)) {
+              const sourceInSubGrafo = subGrafo.find(
+                (grafo) => grafo.getIndice() === sourceGrafoClone.getIndice()
+              );
+
+              const targetInSubGrafo = subGrafo.find(
+                (grafo) => grafo.getIndice() === targetGrafoClone.getIndice()
+              );
+
+              if (sourceInSubGrafo) {
+                if (targetInSubGrafo) {
+                  sourceInSubGrafo.addArestaUnidirecional(targetInSubGrafo);
+                } else {
+                  sourceInSubGrafo.addArestaUnidirecional(targetGrafoClone);
+                  subGrafo.push(targetGrafoClone);
+                }
+              } else {
+                if (targetInSubGrafo) {
+                  sourceGrafoClone.addArestaUnidirecional(targetInSubGrafo);
+                  subGrafo.push(sourceGrafoClone);
+                } else {
+                  sourceGrafoClone.addArestaUnidirecional(targetGrafoClone);
+                  subGrafo.push(sourceGrafoClone);
+                  subGrafo.push(targetGrafoClone);
+                }
+              }
+            }
+          }
+        });
+
+        return subGrafo;
+      case "vertice":
+        vertices.forEach((indice) => {
+          const vertice = grafos.find((grafo) => grafo.getIndice() === indice);
+
+          if (vertice) {
+            const verticeClone = vertice.clone();
+
+            const arestas = vertice.getArestasAdj();
+
+            verticeClone.setArestasAdj(new Array<Grafo>());
+            verticeClone.setArestasMat(
+              Array.from({ length: verticeClone.getIndice() + 1 }, () =>
+                Array.from({ length: verticeClone.getIndice() + 1 }, () => [
+                  null,
+                  0,
+                ])
+              )
+            );
+
+            const verticeInSubGrafo = subGrafo.find(
+              (grafo) => grafo.getIndice() === verticeClone.getIndice()
+            );
+
+            arestas.forEach((aresta) => {
+              if (vertices.includes(aresta.getIndice())) {
+                const arestaClone = aresta.clone();
+
+                arestaClone.setArestasAdj(new Array<Grafo>());
+                arestaClone.setArestasMat(
+                  Array.from({ length: arestaClone.getIndice() + 1 }, () =>
+                    Array.from({ length: arestaClone.getIndice() + 1 }, () => [
+                      null,
+                      0,
+                    ])
+                  )
+                );
+
+                const arestaInSubGrafo = subGrafo.find(
+                  (grafo) => grafo.getIndice() === arestaClone.getIndice()
+                );
+
+                if (!arestaInSubGrafo) {
+                  if (verticeInSubGrafo) {
+                    verticeInSubGrafo.addArestaUnidirecional(arestaClone);
+                  } else {
+                    verticeClone.addArestaUnidirecional(arestaClone);
+                    subGrafo.push(arestaClone);
+                  }
+                } else {
+                  if (verticeInSubGrafo) {
+                    verticeInSubGrafo.addArestaUnidirecional(arestaInSubGrafo);
+                  } else {
+                    verticeClone.addArestaUnidirecional(arestaInSubGrafo);
+                  }
+                }
+              }
+            });
+
+            if (!verticeInSubGrafo) {
+              subGrafo.push(verticeClone);
+            }
+          }
+        });
+
+        return subGrafo;
+      default:
+        vertices.forEach((indice) => {
+          const vertice = grafos.find((grafo) => grafo.getIndice() === indice);
+
+          if (vertice) {
+            const verticeClone = vertice.clone();
+
+            verticeClone.setArestasAdj(new Array<Grafo>());
+            verticeClone.setArestasMat(
+              Array.from({ length: verticeClone.getIndice() + 1 }, () =>
+                Array.from({ length: verticeClone.getIndice() + 1 }, () => [
+                  null,
+                  0,
+                ])
+              )
+            );
+
+            const verticeInSubGrafo = subGrafo.find(
+              (grafo) => grafo.getIndice() === verticeClone.getIndice()
+            );
+
+            if (!verticeInSubGrafo) {
+              subGrafo.push(verticeClone);
+            }
+          }
+        });
+
+        arestas.forEach(([source, target]) => {
+          const sourceGrafo = subGrafo.find(
+            (grafo) => grafo.getIndice() === source
+          );
+
+          const targetGrafo = subGrafo.find(
+            (grafo) => grafo.getIndice() === target
+          );
+
+          if (sourceGrafo && targetGrafo) {
+            sourceGrafo.addArestaUnidirecional(targetGrafo);
+          }
+        });
+
+        return subGrafo;
+    }
+  }
+
   public isBiPartido(conjuntoX: Grafo[], conjuntoY: Grafo[]): boolean {
     const checkConjunto = (conjunto: Grafo[]) => {
       for (const grafo of conjunto) {

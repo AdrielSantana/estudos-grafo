@@ -21,6 +21,21 @@ export class Grafo {
     this.arestasAdj = new Array<Grafo>();
   }
 
+  public setArestasMat(arestasMat: Array<Array<[Grafo | null, number]>>): void {
+    this.arestasMat = arestasMat;
+  }
+
+  public setArestasAdj(arestasAdj: Array<Grafo>): void {
+    this.arestasAdj = arestasAdj;
+  }
+
+  public clone(): Grafo {
+    const grafo = new Grafo(this.indice, this.name);
+    grafo.arestasAdj = this.arestasAdj;
+    grafo.arestasMat = this.arestasMat;
+    return grafo;
+  }
+
   public getGrauAdj(): number {
     return this.arestasAdj.length;
   }
