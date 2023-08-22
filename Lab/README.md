@@ -27,6 +27,6 @@
 - Método para fazer uma busca por profundidade no vértice fornecido
 - Método para subtrair um grafo
 - Método para trazer um subgrafo
-  
+- Método de passeio e caminho
 
 > Foi criado pensando na possibilidade de imprimir e manipular os subgrafos existentes do grafo inteiro
