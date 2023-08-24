@@ -5,19 +5,74 @@ export class Main {
     const start = x;
     const end = v;
 
-    const passeio = this.findPasseio(start, end);
+    const visitedNodes: Grafo[] = [];
+    const nodePath: Grafo[] = [];
 
-    const caminhoToPrint: Grafo[] = [];
+    const search = (grafo: Grafo) => {
+      nodePath.push(grafo);
+      const visitedPathIndex = nodePath.indexOf(grafo);
+      const isGrafoVisited = visitedNodes.indexOf(grafo) === -1 ? false : true;
 
-    for (let i = 0; i < passeio.length; i++) {
-      if (passeio[i] === end) {
-        caminhoToPrint.push(passeio[i]);
-        break;
+      if (!isGrafoVisited) {
+        visitedNodes.push(grafo);
       }
-      caminhoToPrint.push(passeio[i]);
+
+      if (grafo === start && visitedPathIndex > 0) {
+        nodePath.splice(visitedPathIndex, 1);
+      }
+      
+      const isGrafoEnd = grafo === end;
+
+      if (isGrafoEnd) {
+        return;
+      }
+        
+      const edges = grafo.getArestasAdj();
+
+      if (visitedPathIndex === 0) {
+        const areEdgesAvaiable: boolean[] = [];
+        for (const edge of edges) {
+          const isEdgeAvaiable = !visitedNodes.includes(edge);
+          areEdgesAvaiable.push(isEdgeAvaiable);
+        }
+
+        let everyEdgeIsNotAvaiable = true;
+
+        for (const edge of areEdgesAvaiable) {
+          if (edge == true) {
+            everyEdgeIsNotAvaiable = false;
+            break;
+          }
+        }
+
+        if (everyEdgeIsNotAvaiable) {
+          return;
+        }
+      }
+
+      const newVisitedIndex = nodePath.indexOf(grafo);
+
+      for (const edge of edges) {
+        if (!visitedNodes.includes(edge)) {
+          search(edge);
+          return;
+        }
+      }
+
+      nodePath.splice(newVisitedIndex, 1);
+      search(nodePath[newVisitedIndex - 1]);
+      return;
+    };
+
+    search(start);
+
+    const isNotCaminho = !nodePath.includes(start) || !nodePath.includes(end);
+
+    if (isNotCaminho) {
+      throw new Error("Não existe um caminho do vértice " + start.getName() + " ao vértice " + end.getName() + "!");
     }
 
-    return caminhoToPrint;
+    return nodePath;
   }
 
   public findPasseio(x: Grafo, v: Grafo): Grafo[] {
@@ -77,7 +132,7 @@ export class Main {
     const isNotPasseio = !nodePath.includes(start) || !nodePath.includes(end);
 
     if (isNotPasseio) {
-      throw new Error("A estrutura passada não é um passeio!");
+      throw new Error("Não existe um passeio do vértice " + start.getName() + " ao vértice " + end.getName() + "!");
     }
 
     const passeioToPrint: Grafo[] = [];

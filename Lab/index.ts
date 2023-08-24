@@ -29,9 +29,9 @@ console.log("\nImprime o passeio reverso");
 main.printReversePasseio(passeio);
 
 const i = 1;
-const j = 5;
-console.log("\nImprime o segmento do passeio de " + i + " a " + j);
-main.printPasseioSegment(passeio, 1, 5);
+const j = 3;
+console.log("\nImprime o segmento do passeio do índice " + i + " a " + j);
+main.printPasseioSegment(passeio, i, j);
 
 const depthPasseio = main.findPasseio(v1, v5);
 
@@ -45,10 +45,11 @@ main.printPasseio(depthPasseio);
 
 const depthPasseio2 = main.findCaminho(v2, v4);
 
-console.log(
-  "\nImprime o caminho encontrado por busca em profundidade do vértice " +
-    v2.getName() +
-    " ao vértice " +
-    v4.getName()
-);
-main.printPasseio(depthPasseio2);
+// console.log(
+//   "\nImprime o caminho encontrado por busca em profundidade do vértice " +
+//     v2.getName() +
+//     " ao vértice " +
+//     v4.getName()
+// );
+
+// main.printPasseio(depthPasseio2);
