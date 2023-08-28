@@ -267,7 +267,7 @@ export const HandleGraph = ({ verticeName }: Props) => {
         icon={<ExpandOutlined />}
         tooltip="Centralizar"
         type="default"
-        style={{ bottom: "6rem", backgroundColor: "#6096ba" }}
+        style={{ bottom: "2rem", backgroundColor: "#6096ba" }}
         onClick={() => apis.handleAutoZoom()}
       />
     </>

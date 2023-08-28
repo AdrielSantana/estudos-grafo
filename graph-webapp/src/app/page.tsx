@@ -2,7 +2,16 @@
 
 import GraphContainer from "@/components/GraphContainer";
 
-import { Button, Layout, List, Menu, Popover, Space, Typography } from "antd";
+import {
+  Button,
+  Layout,
+  List,
+  Menu,
+  MenuProps,
+  Popover,
+  Space,
+  Typography,
+} from "antd";
 import { useState } from "react";
 
 import { FloatButton, Input } from "antd";
@@ -10,13 +19,17 @@ import {
   QuestionCircleOutlined,
   GithubOutlined,
   PlusOutlined,
+  PieChartOutlined,
+  DesktopOutlined,
+  UserOutlined,
+  TeamOutlined,
+  FileOutlined,
 } from "@ant-design/icons";
-import { Footer } from "antd/es/layout/layout";
 import { App } from "antd";
 import { Grafo } from "@/model/Grafo";
 import { GrafoContext, useGrafos } from "@/hooks/useGrafos";
 
-const { Header, Content } = Layout;
+const { Header, Content, Sider, Footer } = Layout;
 
 interface IHelpData {
   title: string;
@@ -70,9 +83,41 @@ const OPTIONS: {
   },
 ];
 
+type MenuItem = Required<MenuProps>["items"][number];
+
+function getItem(
+  label: React.ReactNode,
+  key: React.Key,
+  icon?: React.ReactNode,
+  children?: MenuItem[]
+): MenuItem {
+  return {
+    key,
+    icon,
+    children,
+    label,
+  } as MenuItem;
+}
+
+const items: MenuItem[] = [
+  getItem("Option 1", "1", <PieChartOutlined />),
+  getItem("Option 2", "2", <DesktopOutlined />),
+  getItem("User", "sub1", <UserOutlined />, [
+    getItem("Tom", "3"),
+    getItem("Bill", "4"),
+    getItem("Alex", "5"),
+  ]),
+  getItem("Team", "sub2", <TeamOutlined />, [
+    getItem("Team 1", "6"),
+    getItem("Team 2", "8"),
+  ]),
+  getItem("Files", "9", <FileOutlined />),
+];
+
 const Page = () => {
   const [layoutType, setLayoutType] = useState("preset");
   const [verticeName, setVerticeName] = useState("v5");
+  const [collapsed, setCollapsed] = useState(true);
   const { grafos, handleUpdateGrafo } = useGrafos();
 
   const handleAddNode = (verticeName: string) => {
@@ -82,9 +127,77 @@ const Page = () => {
     handleUpdateGrafo();
   };
 
+  const sideBarWidth = 320;
+
   return (
-    <App className="layout">
-      <Layout className="layout">
+    <Layout style={{ height: "calc(100% - 0.5rem)" }}>
+      <Sider
+        width={sideBarWidth}
+        collapsible
+        collapsed={collapsed}
+        onCollapse={(value) => setCollapsed(value)}
+        style={{
+          minHeight: "100vh",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          zIndex: 2,
+        }}
+      >
+        <Menu
+          theme="dark"
+          defaultSelectedKeys={["1"]}
+          mode="inline"
+          items={items}
+        />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            marginTop: "2rem",
+            flexDirection: "column",
+            padding: "0 1.5rem",
+            gap: "1rem",
+          }}
+        >
+          <div style={{ display: "flex", gap: "1rem" }}>
+            {!collapsed && (
+              <Input
+                placeholder={"v5"}
+                value={verticeName}
+                onChange={(e) => {
+                  setVerticeName(e.currentTarget.value);
+                }}
+                style={{ backgroundColor: "#e7ecef" }}
+              />
+            )}
+            <Button
+              shape="circle"
+              onClick={() => {
+                handleAddNode(verticeName);
+              }}
+            >
+              <PlusOutlined />
+            </Button>
+          </div>
+          <Button
+            icon={<GithubOutlined />}
+            shape="default"
+            href="https://github.com/AdrielSantana/estudos-grafo/tree/webapp"
+            target="_blank"
+          >
+            {!collapsed && "Github"}
+          </Button>
+        </div>
+      </Sider>
+      <Layout
+        style={{
+          marginLeft: 80,
+          height: "100%",
+          width: `calc(100% - 80px)`,
+        }}
+      >
         <Header>
           <Menu
             mode="horizontal"
@@ -125,52 +238,20 @@ const Page = () => {
           <FloatButton
             icon={<QuestionCircleOutlined />}
             type="default"
-            style={{ bottom: "9rem", backgroundColor: "#6096ba" }}
+            style={{ bottom: "6rem", backgroundColor: "#6096ba" }}
           />
         </Popover>
-        <FloatButton
-          type="default"
-          icon={<GithubOutlined />}
-          shape="square"
-          href="https://github.com/AdrielSantana/estudos-grafo/tree/webapp"
-          target="_blank"
-          tooltip="Github"
-          style={{ left: "2rem", bottom: "6rem", backgroundColor: "#6096ba" }}
-        />
-        <Footer
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "2rem",
-            backgroundColor: "#001529",
-          }}
-        >
-          <Input
-            placeholder={"v5"}
-            value={verticeName}
-            onChange={(e) => {
-              setVerticeName(e.currentTarget.value);
-            }}
-            style={{ width: 200, backgroundColor: "#e7ecef" }}
-          />
-          <Button
-            shape="circle"
-            onClick={() => {
-              handleAddNode(verticeName);
-            }}
-          >
-            <PlusOutlined />
-          </Button>
-        </Footer>
       </Layout>
-    </App>
+    </Layout>
   );
 };
 
 export default function Home() {
   return (
-    <GrafoContext>
-      <Page />
-    </GrafoContext>
+    <App className="layout">
+      <GrafoContext>
+        <Page />
+      </GrafoContext>
+    </App>
   );
 }
