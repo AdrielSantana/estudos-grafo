@@ -1,6 +1,31 @@
 import { Estruturas, Grafo } from "./Grafo";
 
 export class Main {
+  public getGrauDirecionado(grafos: Grafo[], vertice: Grafo): number {
+    const isVerticeInGrafo = grafos.includes(vertice);
+
+    if (!isVerticeInGrafo) {
+      throw new Error("O Vertice informado não está no Grafo. Erro ao pegar o Grau");
+    }
+
+    let grau: number = vertice.getGrau("adjascente");
+
+    for (const grafo of grafos) {
+      if (grafo.hasArestaUnidirecional(vertice)) {
+        const arestas = grafo.getArestasMat();
+
+        const aresta = arestas[grafo.getIndice()][vertice.getIndice()]
+        if (!aresta[0]) {
+          throw new Error('Não foi possível encontrar a aresta. Erro ao pegar o Grau')
+        }
+
+        grau += aresta[1]
+      }
+    }
+
+    return grau;
+  }
+
   public getSubtractGrafo(
     {
       grafos,
@@ -55,7 +80,7 @@ export class Main {
 
               arestasAdj.forEach((arestaAdj) => {
                 const arestaAdjClone = arestaAdj.clone();
-                
+
                 if (arestaAdjClone.getIndice() === verticeGrafo.getIndice()) {
                   while (grafo.hasArestaUnidirecional(arestaAdjClone)) {
                     grafo.removeArestaUnidirecional(arestaAdjClone);

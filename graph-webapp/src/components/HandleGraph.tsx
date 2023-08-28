@@ -251,8 +251,12 @@ export const HandleGraph = ({ verticeName }: Props) => {
               (vertice) => vertice.getIndice() === parseInt(model.id as string)
             );
             if (vertice) {
-              const grau = vertice.getGrau("adjascente");
-              return <div key={value.id}>Grau: {grau}</div>;
+              try {
+                const grau = main.getGrauDirecionado(grafos, vertice);
+                return <div key={value.id}>Grau: {grau}</div>;
+              } catch (error) {
+                message.error(error as string)
+              }
             }
             return null;
           }
