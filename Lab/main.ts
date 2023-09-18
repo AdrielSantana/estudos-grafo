@@ -1,6 +1,203 @@
 import { Estruturas, Grafo } from "./grafo";
 
 export class Main {
+  public findCaminho(x: Grafo, v: Grafo): Grafo[] {
+    const start = x;
+    const end = v;
+
+    const visitedNodes: Grafo[] = [];
+    const nodePath: Grafo[] = [];
+
+    const search = (grafo: Grafo) => {
+      nodePath.push(grafo);
+      const visitedPathIndex = nodePath.indexOf(grafo);
+      const isGrafoVisited = visitedNodes.indexOf(grafo) === -1 ? false : true;
+
+      if (!isGrafoVisited) {
+        visitedNodes.push(grafo);
+      }
+
+      if (grafo === start && visitedPathIndex > 0) {
+        nodePath.splice(visitedPathIndex, 1);
+      }
+      
+      const isGrafoEnd = grafo === end;
+
+      if (isGrafoEnd) {
+        return;
+      }
+        
+      const edges = grafo.getArestasAdj();
+
+      if (visitedPathIndex === 0) {
+        const areEdgesAvaiable: boolean[] = [];
+        for (const edge of edges) {
+          const isEdgeAvaiable = !visitedNodes.includes(edge);
+          areEdgesAvaiable.push(isEdgeAvaiable);
+        }
+
+        let everyEdgeIsNotAvaiable = true;
+
+        for (const edge of areEdgesAvaiable) {
+          if (edge == true) {
+            everyEdgeIsNotAvaiable = false;
+            break;
+          }
+        }
+
+        if (everyEdgeIsNotAvaiable) {
+          return;
+        }
+      }
+
+      const newVisitedIndex = nodePath.indexOf(grafo);
+
+      for (const edge of edges) {
+        if (!visitedNodes.includes(edge)) {
+          search(edge);
+          return;
+        }
+      }
+
+      nodePath.splice(newVisitedIndex, 1);
+      search(nodePath[newVisitedIndex - 1]);
+      return;
+    };
+
+    search(start);
+
+    const isNotCaminho = !nodePath.includes(start) || !nodePath.includes(end);
+
+    if (isNotCaminho) {
+      throw new Error("Não existe um caminho do vértice " + start.getName() + " ao vértice " + end.getName() + "!");
+    }
+
+    return nodePath;
+  }
+
+  public findPasseio(x: Grafo, v: Grafo): Grafo[] {
+    const start = x;
+    const end = v;
+
+    const visitedNodes: Grafo[] = [];
+    const nodePath: Grafo[] = [];
+
+    const search = (grafo: Grafo) => {
+      nodePath.push(grafo);
+      const visitedPathIndex = nodePath.indexOf(grafo);
+      const isGrafoVisited = visitedNodes.indexOf(grafo) === -1 ? false : true;
+
+      if (!isGrafoVisited) {
+        visitedNodes.push(grafo);
+      }
+
+      const edges = grafo.getArestasAdj();
+
+      if (visitedPathIndex === 0) {
+        const areEdgesAvaiable: boolean[] = [];
+        for (const edge of edges) {
+          const isEdgeAvaiable = !visitedNodes.includes(edge);
+          areEdgesAvaiable.push(isEdgeAvaiable);
+        }
+
+        let everyEdgeIsNotAvaiable = true;
+
+        for (const edge of areEdgesAvaiable) {
+          if (edge == true) {
+            everyEdgeIsNotAvaiable = false;
+            break;
+          }
+        }
+
+        if (everyEdgeIsNotAvaiable) {
+          return;
+        }
+      }
+
+      const newVisitedIndex = nodePath.indexOf(grafo);
+
+      for (const edge of edges) {
+        if (!visitedNodes.includes(edge)) {
+          search(edge);
+          return;
+        }
+      }
+
+      search(nodePath[newVisitedIndex - 1]);
+      return;
+    };
+
+    search(start);
+
+    const isNotPasseio = !nodePath.includes(start) || !nodePath.includes(end);
+
+    if (isNotPasseio) {
+      throw new Error("Não existe um passeio do vértice " + start.getName() + " ao vértice " + end.getName() + "!");
+    }
+
+    const passeioToPrint: Grafo[] = [];
+
+    for (let i = 0; i < nodePath.length; i++) {
+      if (nodePath[i] === end) {
+        passeioToPrint.push(nodePath[i]);
+        break;
+      }
+
+      passeioToPrint.push(nodePath[i]);
+    }
+
+    return passeioToPrint;
+  }
+
+  public isPasseio(passeio: Grafo[]): boolean {
+    if (passeio.length < 1) {
+      return false;
+    }
+
+    for (let i = 0; i < passeio.length - 1; i++) {
+      const grafo = passeio[i];
+      const nextGrafo = passeio[i + 1];
+
+      if (!grafo.hasArestaUnidirecional(nextGrafo)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  public printReversePasseio(passeio: Grafo[]): void {
+    const reversedPasseio = passeio.reverse();
+
+    this.printPasseio(reversedPasseio);
+  }
+
+  public printPasseioSegment(passeio: Grafo[], i: number, j: number) {
+    const passeioSegment = passeio.slice(i, j + 1);
+
+    this.printPasseio(passeioSegment);
+  }
+
+  public printPasseio(passeio: Grafo[]): void {
+    const isNotPasseio = !this.isPasseio(passeio);
+    if (isNotPasseio) {
+      throw new Error("A estrutura passada não é um passeio!");
+    }
+
+    console.log(
+      passeio
+        .map((grafo: Grafo, i) => {
+          const nextNode = passeio[i + 1];
+          if (!nextNode) {
+            return grafo.getName();
+          }
+
+          return `${grafo.getName()} (${grafo.getName()}, ${nextNode.getName()})`;
+        })
+        .join(" -> ")
+    );
+  }
+
   public getSubtractGrafo(
     {
       grafos,
@@ -55,7 +252,7 @@ export class Main {
 
               arestasAdj.forEach((arestaAdj) => {
                 const arestaAdjClone = arestaAdj.clone();
-                
+
                 if (arestaAdjClone.getIndice() === verticeGrafo.getIndice()) {
                   while (grafo.hasArestaUnidirecional(arestaAdjClone)) {
                     grafo.removeArestaUnidirecional(arestaAdjClone);
