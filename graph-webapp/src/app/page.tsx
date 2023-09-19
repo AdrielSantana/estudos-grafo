@@ -7,7 +7,6 @@ import {
   Layout,
   List,
   Menu,
-  MenuProps,
   Popover,
   Space,
   Typography,
@@ -19,100 +18,14 @@ import {
   QuestionCircleOutlined,
   GithubOutlined,
   PlusOutlined,
-  PieChartOutlined,
-  DesktopOutlined,
-  UserOutlined,
-  TeamOutlined,
-  FileOutlined,
 } from "@ant-design/icons";
 import { App } from "antd";
 import { Grafo } from "@/model/Grafo";
 import { GrafoContext, useGrafos } from "@/hooks/useGrafos";
+import { HEADER_OPTIONS } from "@/constants/header-options";
+import { HELP_DATA, IHelpData } from "@/constants/help-data";
 
-const { Header, Content, Sider, Footer } = Layout;
-
-interface IHelpData {
-  title: string;
-  description: string;
-}
-
-const HELP_DATA: IHelpData[] = [
-  {
-    title: "Exibição",
-    description:
-      "Utilize o Menu acima para escolher qual forma quer exibir o Grafo",
-  },
-  {
-    title: "Manipulação",
-    description:
-      "Clique com o botão direito em cima do Vértice, Aresta ou Plano para exibir as opções.",
-  },
-];
-
-const OPTIONS: {
-  label: string;
-  value: string;
-}[] = [
-  {
-    label: "Aleatório",
-    value: "random",
-  },
-  {
-    label: "Árvore",
-    value: "dagre",
-  },
-  {
-    label: "Concêntrico",
-    value: "concentric",
-  },
-  {
-    label: "Grade",
-    value: "grid",
-  },
-  {
-    label: "Circular",
-    value: "circular",
-  },
-  {
-    label: "Radial",
-    value: "radial",
-  },
-  {
-    label: "Junção",
-    value: "mds",
-  },
-];
-
-type MenuItem = Required<MenuProps>["items"][number];
-
-function getItem(
-  label: React.ReactNode,
-  key: React.Key,
-  icon?: React.ReactNode,
-  children?: MenuItem[]
-): MenuItem {
-  return {
-    key,
-    icon,
-    children,
-    label,
-  } as MenuItem;
-}
-
-const items: MenuItem[] = [
-  getItem("Option 1", "1", <PieChartOutlined />),
-  getItem("Option 2", "2", <DesktopOutlined />),
-  getItem("User", "sub1", <UserOutlined />, [
-    getItem("Tom", "3"),
-    getItem("Bill", "4"),
-    getItem("Alex", "5"),
-  ]),
-  getItem("Team", "sub2", <TeamOutlined />, [
-    getItem("Team 1", "6"),
-    getItem("Team 2", "8"),
-  ]),
-  getItem("Files", "9", <FileOutlined />),
-];
+const { Header, Content, Sider } = Layout;
 
 const Page = () => {
   const [layoutType, setLayoutType] = useState("preset");
@@ -137,28 +50,24 @@ const Page = () => {
         collapsed={collapsed}
         onCollapse={(value) => setCollapsed(value)}
         style={{
-          minHeight: "100vh",
+          height: "100vh",
           position: "fixed",
           top: 0,
           left: 0,
           zIndex: 2,
         }}
       >
-        <Menu
-          theme="dark"
-          defaultSelectedKeys={["1"]}
-          mode="inline"
-          items={items}
-        />
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "flex-end",
+            justifyContent: "space-between",
             marginTop: "2rem",
             flexDirection: "column",
             padding: "0 1.5rem",
+            minHeight: '100%',
             gap: "1rem",
+            paddingBottom: "4rem",
           }}
         >
           <div style={{ display: "flex", gap: "1rem" }}>
@@ -203,7 +112,7 @@ const Page = () => {
             mode="horizontal"
             defaultSelectedKeys={["1"]}
             theme="dark"
-            items={OPTIONS.map((option) => {
+            items={HEADER_OPTIONS.map((option) => {
               return {
                 key: option.value,
                 label: option.label,

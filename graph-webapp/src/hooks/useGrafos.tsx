@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { Dispatch, SetStateAction, createContext, useContext } from "react";
 
 import { Grafo } from "@/model/Grafo";
 import { IUserEdge, IUserNode } from "@antv/graphin";
@@ -54,17 +54,28 @@ type Props = {
 
 const Context = createContext<IGrafosContext>({} as IGrafosContext);
 
+interface ISubGrafo {
+  id: number;
+  grafo: Grafo[];
+}
+
 interface IGrafosContext {
   nodes: IUserNode[];
   edges: IUserEdge[];
   grafos: Grafo[];
   handleUpdateGrafo: () => void;
+  subGrafos: ISubGrafo[];
+  setSubGrafos: Dispatch<SetStateAction<ISubGrafo[]>>;
 }
 
 export const GrafoContext = ({ children }: Props) => {
   const [grafos, setGrafos] = useState<Grafo[]>(vertices);
   const [nodes, setNodes] = useState<IUserNode[]>(formmatedNodes(grafos));
   const [edges, setEdges] = useState<IUserEdge[]>(formmatedEdges(grafos));
+
+  const [subGrafos, setSubGrafos] = useState<{ id: number; grafo: Grafo[] }[]>(
+    []
+  );
 
   const handleUpdateGrafo = () => {
     setGrafos([...grafos]);
@@ -82,6 +93,8 @@ export const GrafoContext = ({ children }: Props) => {
         grafos,
         handleUpdateGrafo,
         nodes,
+        subGrafos,
+        setSubGrafos,
       }}
     >
       {children}
