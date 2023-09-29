@@ -3,14 +3,7 @@ import { Dispatch, SetStateAction, createContext, useContext } from "react";
 import { Grafo } from "@/model/Grafo";
 import { IUserEdge, IUserNode } from "@antv/graphin";
 import { useEffect, useState } from "react";
-
-const vertice0 = new Grafo(0, "v0");
-const vertice1 = new Grafo(1, "v1");
-const vertice2 = new Grafo(2, "v2");
-const vertice3 = new Grafo(3, "v3");
-const vertice4 = new Grafo(4, "v4");
-
-const vertices = [vertice0, vertice1, vertice2, vertice3, vertice4];
+import { initialGraph } from "@/constants/initial-graph";
 
 const formmatedNodes = (grafos: Grafo[]): IUserNode[] => {
   return grafos.map((vertice) => {
@@ -36,8 +29,12 @@ const formmatedEdges = (grafos: Grafo[]): IUserEdge[] => {
     return vertice.getArestasAdj().map((aresta) => {
       return {
         source: vertice.getIndice().toString(),
-        target: aresta.getIndice().toString(),
+        target: aresta.getTarget().getIndice().toString(),
+        weight: aresta.getPeso(),
         style: {
+          label: {
+            value: aresta.getName()
+          },
           keyshape: {
             opacity: 0.3,
             stroke: "#001529",
@@ -54,28 +51,17 @@ type Props = {
 
 const Context = createContext<IGrafosContext>({} as IGrafosContext);
 
-interface ISubGrafo {
-  id: number;
-  grafo: Grafo[];
-}
-
 interface IGrafosContext {
   nodes: IUserNode[];
   edges: IUserEdge[];
   grafos: Grafo[];
   handleUpdateGrafo: () => void;
-  subGrafos: ISubGrafo[];
-  setSubGrafos: Dispatch<SetStateAction<ISubGrafo[]>>;
 }
 
 export const GrafoContext = ({ children }: Props) => {
-  const [grafos, setGrafos] = useState<Grafo[]>(vertices);
+  const [grafos, setGrafos] = useState<Grafo[]>(initialGraph);
   const [nodes, setNodes] = useState<IUserNode[]>(formmatedNodes(grafos));
   const [edges, setEdges] = useState<IUserEdge[]>(formmatedEdges(grafos));
-
-  const [subGrafos, setSubGrafos] = useState<{ id: number; grafo: Grafo[] }[]>(
-    []
-  );
 
   const handleUpdateGrafo = () => {
     setGrafos([...grafos]);
@@ -93,8 +79,6 @@ export const GrafoContext = ({ children }: Props) => {
         grafos,
         handleUpdateGrafo,
         nodes,
-        subGrafos,
-        setSubGrafos,
       }}
     >
       {children}

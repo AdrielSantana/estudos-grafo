@@ -1,11 +1,13 @@
+import { Aresta } from "./Aresta";
+
 export type Estruturas = "matriz" | "adjascente";
 
 export class Grafo {
   private indice: number;
   private name: string;
-  protected arestasAdj: Array<Grafo> = new Array<Grafo>();
-  protected arestasMat: Array<Array<[Grafo | null, number]>> = new Array<
-    Array<[Grafo, number]>
+  protected arestasAdj: Array<Aresta> = new Array<Aresta>();
+  protected arestasMat: Array<Array<[Aresta | null, number]>> = new Array<
+    Array<[Aresta, number]>
   >();
 
   constructor(indice: number, name: string) {
@@ -18,14 +20,16 @@ export class Grafo {
     this.arestasMat = Array.from({ length: indice + 1 }, () =>
       Array.from({ length: indice + 1 }, () => [null, 0])
     );
-    this.arestasAdj = new Array<Grafo>();
+    this.arestasAdj = new Array<Aresta>();
   }
 
-  public setArestasMat(arestasMat: Array<Array<[Grafo | null, number]>>): void {
+  public setArestasMat(
+    arestasMat: Array<Array<[Aresta | null, number]>>
+  ): void {
     this.arestasMat = arestasMat;
   }
 
-  public setArestasAdj(arestasAdj: Array<Grafo>): void {
+  public setArestasAdj(arestasAdj: Array<Aresta>): void {
     this.arestasAdj = arestasAdj;
   }
 
@@ -42,8 +46,8 @@ export class Grafo {
 
   public getGrauMat(): number {
     let grau = 0;
-    this.arestasMat.forEach((linha: Array<[Grafo | null, number]>) => {
-      linha.forEach((coluna: [Grafo | null, number]) => {
+    this.arestasMat.forEach((linha: Array<[Aresta | null, number]>) => {
+      linha.forEach((coluna: [Aresta | null, number]) => {
         if (coluna !== null) {
           grau += coluna[1];
         }
@@ -60,11 +64,11 @@ export class Grafo {
     }
   }
 
-  public getArestasMat(): Array<Array<[Grafo | null, number]>> {
+  public getArestasMat(): Array<Array<[Aresta | null, number]>> {
     return this.arestasMat;
   }
 
-  public getArestasAdj(): Array<Grafo> {
+  public getArestasAdj(): Array<Aresta> {
     return this.arestasAdj;
   }
 
@@ -84,59 +88,69 @@ export class Grafo {
     this.indice = indice;
   }
 
-  private addArestaMatriz(grafo: Grafo): void {
-    const aresta = this.arestasMat[this.indice][grafo.getIndice()];
-    if (aresta !== null && aresta !== undefined) {
-      if (aresta[0] === null) {
-        this.arestasMat[this.indice][grafo.getIndice()][0] = grafo;
+  private addArestaMatriz(aresta: Aresta): void {
+    const arestaMat =
+      this.arestasMat[this.indice][aresta.getTarget().getIndice()];
+    if (arestaMat !== null && arestaMat !== undefined) {
+      if (arestaMat[0] === null) {
+        this.arestasMat[this.indice][aresta.getTarget().getIndice()][0] =
+          aresta;
       }
-      this.arestasMat[this.indice][grafo.getIndice()][1] += 1;
+      this.arestasMat[this.indice][aresta.getTarget().getIndice()][1] += 1;
       return;
     }
-    this.arestasMat[this.indice][grafo.getIndice()] = [grafo, 1];
+    this.arestasMat[this.indice][aresta.getTarget().getIndice()] = [aresta, 1];
   }
 
-  private addArestaAdj(grafo: Grafo): void {
-    this.arestasAdj.push(grafo);
+  private addArestaAdj(aresta: Aresta): void {
+    this.arestasAdj.push(aresta);
   }
 
-  public addAresta(grafo: Grafo): void {
-    this.addArestaMatriz(grafo);
-    this.addArestaAdj(grafo);
+  public addAresta(aresta: Aresta): void {
+    this.addArestaMatriz(aresta);
+    this.addArestaAdj(aresta);
   }
 
-  private removeArestaMatriz(grafo: Grafo): void {
-    const aresta = this.arestasMat[this.indice][grafo.getIndice()];
-    if (aresta !== null && aresta !== undefined) {
-      this.arestasMat[this.indice][grafo.getIndice()][1] -= 1;
-      if (aresta[1] === 0) {
-        this.arestasMat[this.indice][grafo.getIndice()][0] = null;
+  private removeArestaMatriz(aresta: Aresta): void {
+    const arestaMat =
+      this.arestasMat[this.indice][aresta.getTarget().getIndice()];
+    if (arestaMat !== null && arestaMat !== undefined) {
+      this.arestasMat[this.indice][aresta.getTarget().getIndice()][1] -= 1;
+      if (arestaMat[1] === 0) {
+        this.arestasMat[this.indice][aresta.getTarget().getIndice()][0] = null;
       }
       return;
     }
   }
 
-  private removeArestaAdj(grafo: Grafo): void {
-    const index = this.arestasAdj.indexOf(grafo);
+  private removeArestaAdj(aresta: Aresta): void {
+    const index = this.arestasAdj.indexOf(aresta);
     if (index > -1) {
       this.arestasAdj.splice(index, 1);
     }
   }
 
-  public removeAresta(grafo: Grafo): void {
-    this.removeArestaMatriz(grafo);
-    this.removeArestaAdj(grafo);
+  public removeAresta(aresta: Aresta): void {
+    this.removeArestaMatriz(aresta);
+    this.removeArestaAdj(aresta);
   }
 
   private hasArestaMatriz(grafo: Grafo): boolean {
     if (this.arestasMat[this.indice][grafo.getIndice()] !== undefined) {
-      return this.arestasMat[this.indice][grafo.getIndice()][0] === grafo;
+      return (
+        this.arestasMat[this.indice][grafo.getIndice()][0]?.getTarget().getIndice() ===
+        grafo.getIndice()
+      );
     }
-    return false
+    return false;
   }
 
   private hasArestaAdj(grafo: Grafo): boolean {
-    return this.arestasAdj.includes(grafo);
+    const foundAresta = this.arestasAdj.find((aresta) => {
+      return aresta.getTarget().getIndice() === grafo.getIndice();
+    });
+
+    return !!foundAresta;
   }
 
   public hasAresta(grafo: Grafo): boolean {
@@ -153,21 +167,33 @@ export class Grafo {
     return hasArestaBidirecional;
   }
 
-  public addArestaUnidirecional(grafo: Grafo): void {
-    this.addAresta(grafo);
+  public addArestaUnidirecional(aresta: Aresta): void {
+    this.addAresta(aresta);
   }
 
-  public addArestaBidirecional(grafo: Grafo): void {
-    this.addAresta(grafo);
-    grafo.addAresta(this);
+  public addArestaBidirecional(aresta: Aresta): void {
+    const arestaReturn = aresta.clone();
+    arestaReturn.setTarget(this);
+    this.addAresta(aresta);
+    aresta.getTarget().addAresta(arestaReturn);
   }
 
-  public removeArestaUnidirecional(grafo: Grafo): void {
-    this.removeAresta(grafo);
+  public removeArestaUnidirecional(aresta: Aresta): void {
+    this.removeAresta(aresta);
   }
 
-  public removeArestaBidirecional(grafo: Grafo): void {
-    this.removeAresta(grafo);
-    grafo.removeAresta(this);
+  public removeArestaBidirecional(aresta: Aresta): void {
+    this.removeAresta(aresta);
+
+    const arestaReturn = aresta
+      .getTarget()
+      .getArestasAdj()
+      .find((aresta) => {
+        aresta.getTarget() === this
+      });
+
+    if (arestaReturn) {
+      aresta.getTarget().removeAresta(arestaReturn);
+    }
   }
 }

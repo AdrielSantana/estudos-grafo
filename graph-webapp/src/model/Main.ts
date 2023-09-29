@@ -1,3 +1,4 @@
+import { Aresta } from "./Aresta";
 import { Estruturas, Grafo } from "./Grafo";
 
 export class Main {
@@ -29,16 +30,18 @@ export class Main {
 
     return grau;
   }
-  
-  public findCaminho(x: Grafo, v: Grafo): Grafo[] {
+
+  public findCaminho(x: Grafo, v: Grafo): {nodePath: Grafo[], realPath: Grafo[]} {
     const start = x;
     const end = v;
 
+    const realPath: Grafo[] = [];
     const visitedNodes: Grafo[] = [];
     const nodePath: Grafo[] = [];
 
     const search = (grafo: Grafo) => {
       nodePath.push(grafo);
+      realPath.push(grafo);
       const visitedPathIndex = nodePath.indexOf(grafo);
       const isGrafoVisited = visitedNodes.indexOf(grafo) === -1 ? false : true;
 
@@ -61,7 +64,7 @@ export class Main {
       if (visitedPathIndex === 0) {
         const areEdgesAvaiable: boolean[] = [];
         for (const edge of edges) {
-          const isEdgeAvaiable = !visitedNodes.includes(edge);
+          const isEdgeAvaiable = !visitedNodes.includes(edge.getTarget());
           areEdgesAvaiable.push(isEdgeAvaiable);
         }
 
@@ -82,8 +85,8 @@ export class Main {
       const newVisitedIndex = nodePath.indexOf(grafo);
 
       for (const edge of edges) {
-        if (!visitedNodes.includes(edge)) {
-          search(edge);
+        if (!visitedNodes.includes(edge.getTarget())) {
+          search(edge.getTarget());
           return;
         }
       }
@@ -107,7 +110,7 @@ export class Main {
       );
     }
 
-    return nodePath;
+    return {nodePath, realPath};
   }
 
   public findPasseio(x: Grafo, v: Grafo): Grafo[] {
@@ -131,7 +134,7 @@ export class Main {
       if (visitedPathIndex === 0) {
         const areEdgesAvaiable: boolean[] = [];
         for (const edge of edges) {
-          const isEdgeAvaiable = !visitedNodes.includes(edge);
+          const isEdgeAvaiable = !visitedNodes.includes(edge.getTarget());
           areEdgesAvaiable.push(isEdgeAvaiable);
         }
 
@@ -152,8 +155,8 @@ export class Main {
       const newVisitedIndex = nodePath.indexOf(grafo);
 
       for (const edge of edges) {
-        if (!visitedNodes.includes(edge)) {
-          search(edge);
+        if (!visitedNodes.includes(edge.getTarget())) {
+          search(edge.getTarget());
           return;
         }
       }
@@ -226,16 +229,15 @@ export class Main {
     }
 
     return passeio
-        .map((grafo: Grafo, i) => {
-          const nextNode = passeio[i + 1];
-          if (!nextNode) {
-            return grafo.getName();
-          }
+      .map((grafo: Grafo, i) => {
+        const nextNode = passeio[i + 1];
+        if (!nextNode) {
+          return grafo.getName();
+        }
 
-          return `${grafo.getName()} (${grafo.getName()}, ${nextNode.getName()})`;
-        })
-        .join(" -> ")
-    ;
+        return `${grafo.getName()} (${grafo.getName()}, ${nextNode.getName()})`;
+      })
+      .join(" -> ");
   }
 
   public getSubtractGrafo(
@@ -269,7 +271,10 @@ export class Main {
 
           if (sourceGrafo && targetGrafo) {
             if (sourceGrafo.hasArestaUnidirecional(targetGrafo)) {
-              sourceGrafo.removeArestaUnidirecional(targetGrafo);
+              const aresta = sourceGrafo.getArestasAdj().find((aresta) => {
+                aresta.getTarget() === targetGrafo;
+              });
+              sourceGrafo.removeArestaUnidirecional(aresta as Aresta);
             }
           }
         });
@@ -291,11 +296,17 @@ export class Main {
               const arestasAdj = grafo.getArestasAdj();
 
               arestasAdj.forEach((arestaAdj) => {
-                const arestaAdjClone = arestaAdj.clone();
+                const aresta = arestaAdj.getTarget();
+                const arestaAdjClone = aresta.clone();
 
                 if (arestaAdjClone.getIndice() === verticeGrafo.getIndice()) {
                   while (grafo.hasArestaUnidirecional(arestaAdjClone)) {
-                    grafo.removeArestaUnidirecional(arestaAdjClone);
+                    const arestaToRemove = grafo
+                      .getArestasAdj()
+                      .find((aresta) => {
+                        aresta.getTarget() === arestaAdjClone;
+                      });
+                    grafo.removeArestaUnidirecional(arestaToRemove as Aresta);
                   }
                 }
               });
@@ -345,8 +356,8 @@ export class Main {
             const sourceGrafoClone = sourceGrafo.clone();
             const targetGrafoClone = targetGrafo.clone();
 
-            sourceGrafoClone.setArestasAdj(new Array<Grafo>());
-            targetGrafoClone.setArestasAdj(new Array<Grafo>());
+            sourceGrafoClone.setArestasAdj(new Array<Aresta>());
+            targetGrafoClone.setArestasAdj(new Array<Aresta>());
 
             sourceGrafoClone.setArestasMat(
               Array.from({ length: sourceGrafoClone.getIndice() + 1 }, () =>
@@ -376,17 +387,41 @@ export class Main {
 
               if (sourceInSubGrafo) {
                 if (targetInSubGrafo) {
-                  sourceInSubGrafo.addArestaUnidirecional(targetInSubGrafo);
+                  sourceInSubGrafo.addArestaUnidirecional(
+                    new Aresta(
+                      `${sourceInSubGrafo.getName()} -> ${targetInSubGrafo.getName()}`,
+                      1,
+                      targetInSubGrafo
+                    )
+                  );
                 } else {
-                  sourceInSubGrafo.addArestaUnidirecional(targetGrafoClone);
+                  sourceInSubGrafo.addArestaUnidirecional(
+                    new Aresta(
+                      `${sourceInSubGrafo.getName()} -> ${targetGrafoClone.getName()}`,
+                      1,
+                      targetGrafoClone
+                    )
+                  );
                   subGrafo.push(targetGrafoClone);
                 }
               } else {
                 if (targetInSubGrafo) {
-                  sourceGrafoClone.addArestaUnidirecional(targetInSubGrafo);
+                  sourceGrafoClone.addArestaUnidirecional(
+                    new Aresta(
+                      `${sourceGrafoClone.getName()} -> ${targetInSubGrafo.getName()}`,
+                      1,
+                      targetInSubGrafo
+                    )
+                  );
                   subGrafo.push(sourceGrafoClone);
                 } else {
-                  sourceGrafoClone.addArestaUnidirecional(targetGrafoClone);
+                  sourceGrafoClone.addArestaUnidirecional(
+                    new Aresta(
+                      `${sourceGrafoClone.getName()} -> ${targetGrafoClone.getName()}`,
+                      1,
+                      targetGrafoClone
+                    )
+                  );
                   subGrafo.push(sourceGrafoClone);
                   subGrafo.push(targetGrafoClone);
                 }
@@ -405,7 +440,7 @@ export class Main {
 
             const arestas = vertice.getArestasAdj();
 
-            verticeClone.setArestasAdj(new Array<Grafo>());
+            verticeClone.setArestasAdj(new Array<Aresta>());
             verticeClone.setArestasMat(
               Array.from({ length: verticeClone.getIndice() + 1 }, () =>
                 Array.from({ length: verticeClone.getIndice() + 1 }, () => [
@@ -420,10 +455,10 @@ export class Main {
             );
 
             arestas.forEach((aresta) => {
-              if (vertices.includes(aresta.getIndice())) {
-                const arestaClone = aresta.clone();
+              if (vertices.includes(aresta.getTarget().getIndice())) {
+                const arestaClone = aresta.getTarget().clone();
 
-                arestaClone.setArestasAdj(new Array<Grafo>());
+                arestaClone.setArestasAdj(new Array<Aresta>());
                 arestaClone.setArestasMat(
                   Array.from({ length: arestaClone.getIndice() + 1 }, () =>
                     Array.from({ length: arestaClone.getIndice() + 1 }, () => [
@@ -439,16 +474,40 @@ export class Main {
 
                 if (!arestaInSubGrafo) {
                   if (verticeInSubGrafo) {
-                    verticeInSubGrafo.addArestaUnidirecional(arestaClone);
+                    verticeInSubGrafo.addArestaUnidirecional(
+                      new Aresta(
+                        `${verticeInSubGrafo.getName()} -> ${arestaClone.getName()}`,
+                        1,
+                        arestaClone
+                      )
+                    );
                   } else {
-                    verticeClone.addArestaUnidirecional(arestaClone);
+                    verticeClone.addArestaUnidirecional(
+                      new Aresta(
+                        `${verticeClone.getName()} -> ${arestaClone.getName()}`,
+                        1,
+                        arestaClone
+                      )
+                    );
                     subGrafo.push(arestaClone);
                   }
                 } else {
                   if (verticeInSubGrafo) {
-                    verticeInSubGrafo.addArestaUnidirecional(arestaInSubGrafo);
+                    verticeInSubGrafo.addArestaUnidirecional(
+                      new Aresta(
+                        `${verticeInSubGrafo.getName()} -> ${arestaClone.getName()}`,
+                        1,
+                        arestaInSubGrafo
+                      )
+                    );
                   } else {
-                    verticeClone.addArestaUnidirecional(arestaInSubGrafo);
+                    verticeClone.addArestaUnidirecional(
+                      new Aresta(
+                        `${verticeClone.getName()} -> ${arestaClone.getName()}`,
+                        1,
+                        arestaInSubGrafo
+                      )
+                    );
                   }
                 }
               }
@@ -468,7 +527,7 @@ export class Main {
           if (vertice) {
             const verticeClone = vertice.clone();
 
-            verticeClone.setArestasAdj(new Array<Grafo>());
+            verticeClone.setArestasAdj(new Array<Aresta>());
             verticeClone.setArestasMat(
               Array.from({ length: verticeClone.getIndice() + 1 }, () =>
                 Array.from({ length: verticeClone.getIndice() + 1 }, () => [
@@ -498,7 +557,13 @@ export class Main {
           );
 
           if (sourceGrafo && targetGrafo) {
-            sourceGrafo.addArestaUnidirecional(targetGrafo);
+            sourceGrafo.addArestaUnidirecional(
+              new Aresta(
+                `${sourceGrafo.getName()} -> ${targetGrafo.getName()}`,
+                1,
+                targetGrafo
+              )
+            );
           }
         });
 
@@ -510,7 +575,7 @@ export class Main {
     const checkConjunto = (conjunto: Grafo[]) => {
       for (const grafo of conjunto) {
         for (const aresta of grafo.getArestasAdj()) {
-          if (conjunto.includes(aresta)) {
+          if (conjunto.includes(aresta.getTarget())) {
             return false;
           }
         }
@@ -538,7 +603,9 @@ export class Main {
     if (grau % 2 === 0) {
       grafos.forEach((grafo) => {
         for (let i = 0; i < grau / 2; i++) {
-          grafo.addArestaBidirecional(grafo);
+          grafo.addArestaBidirecional(
+            new Aresta(`${grafo.getName()} -> ${grafo.getName()}`, 1, grafo)
+          );
         }
       });
     } else if (grau % 2 !== 0 && grafos.length % 2 === 0) {
@@ -546,11 +613,21 @@ export class Main {
         const grafo = grafos[i];
 
         for (let j = 0; j < grau / 2 - 1; j++) {
-          grafo.addArestaBidirecional(grafo);
+          grafo.addArestaBidirecional(
+            new Aresta(`${grafo.getName()} -> ${grafo.getName()}`, 1, grafo)
+          );
         }
 
         if (i < grafos.length / 2) {
-          grafo.addArestaBidirecional(grafos[i + grafos.length / 2]);
+          grafo.addArestaBidirecional(
+            new Aresta(
+              `${grafo.getName()} -> ${grafos[
+                i + grafos.length / 2
+              ].getName()}`,
+              1,
+              grafos[i + grafos.length / 2]
+            )
+          );
         }
       }
     } else {
@@ -572,7 +649,9 @@ export class Main {
     grafos.forEach((grafo: Grafo) => {
       grafos.forEach((grafo2: Grafo) => {
         if (grafo !== grafo2 && !grafo.hasArestaBidirecional(grafo2)) {
-          grafo.addArestaBidirecional(grafo2);
+          grafo.addArestaBidirecional(
+            new Aresta(`${grafo.getName()} -> ${grafo2.getName()}`, 1, grafo2)
+          );
         }
       });
     });
@@ -586,9 +665,21 @@ export class Main {
       const randomGrafo: Grafo =
         grafos[Math.floor(randomNumber * grafos.length)];
       if (randomNumber > 0.5) {
-        grafo.addArestaUnidirecional(randomGrafo);
+        grafo.addArestaUnidirecional(
+          new Aresta(
+            `${grafo.getName()} -> ${randomGrafo.getName()}`,
+            1,
+            randomGrafo
+          )
+        );
       } else {
-        grafo.addArestaBidirecional(randomGrafo);
+        grafo.addArestaBidirecional(
+          new Aresta(
+            `${grafo.getName()} -> ${randomGrafo.getName()}`,
+            1,
+            randomGrafo
+          )
+        );
       }
     });
   }
@@ -598,7 +689,12 @@ export class Main {
       const randomNumber = Math.random();
       const randomGrafo: Grafo =
         grafos[Math.floor(randomNumber * grafos.length)];
-      grafo.removeArestaUnidirecional(randomGrafo);
+      const randomAresta = grafo.getArestasAdj().find((aresta) => {
+        aresta.getTarget() === randomGrafo;
+      });
+      if (randomAresta) {
+        grafo.removeArestaUnidirecional(randomAresta);
+      }
     });
   }
 
@@ -655,7 +751,7 @@ export class Main {
     let totalArestas = 0;
     grafos.forEach((grafo) => {
       grafo.getArestasAdj().forEach((aresta) => {
-        if (aresta.hasArestaUnidirecional(grafo)) {
+        if (aresta.getTarget().hasArestaUnidirecional(grafo)) {
           totalArestas += 1 / 2;
         } else {
           totalArestas += 1;
@@ -673,7 +769,7 @@ export class Main {
         row.forEach((aresta) => {
           if (aresta[0] !== null) {
             for (let i = 0; i < aresta[1]; i++) {
-              if (aresta[0].hasArestaUnidirecional(grafo)) {
+              if (aresta[0].getTarget().hasArestaUnidirecional(grafo)) {
                 totalArestas += 1 / 2;
               } else {
                 totalArestas += 1;
@@ -698,16 +794,16 @@ export class Main {
   private printArestasAdj(grafo: Grafo): void {
     grafo
       .getArestasAdj()
-      .forEach((aresta: Grafo) =>
-        console.log(grafo.getName(), " -> ", aresta.getName())
+      .forEach((aresta: Aresta) =>
+        console.log(grafo.getName(), " -> ", aresta.getTarget().getName())
       );
   }
 
   private printArestasMat(grafo: Grafo): void {
-    const matrix: Array<Array<[Grafo | null, number]>> = grafo
+    const matrix: Array<Array<[Aresta | null, number]>> = grafo
       .getArestasMat()
-      .map((linha: Array<[Grafo | null, number]>) => {
-        return linha.map((coluna: [Grafo | null, number]) => {
+      .map((linha: Array<[Aresta | null, number]>) => {
+        return linha.map((coluna: [Aresta | null, number]) => {
           if (coluna[1] !== 0) {
             return coluna;
           }
@@ -745,8 +841,8 @@ export class Main {
 
   private mergeMatrices(
     grafos: Array<Grafo>
-  ): Array<Array<[Grafo | null, number]>> {
-    const mergedMatrix: Array<Array<[Grafo | null, number]>> = [];
+  ): Array<Array<[Aresta | null, number]>> {
+    const mergedMatrix: Array<Array<[Aresta | null, number]>> = [];
 
     const max = Math.max(
       ...Array.from(grafos).map((grafo: Grafo) => grafo.getIndice())
@@ -759,8 +855,8 @@ export class Main {
     grafos.forEach((grafo: Grafo) => {
       grafo
         .getArestasMat()
-        .forEach((linha: Array<[Grafo | null, number]>, rowIndex: number) => {
-          linha.forEach((coluna: [Grafo | null, number], colIndex: number) => {
+        .forEach((linha: Array<[Aresta | null, number]>, rowIndex: number) => {
+          linha.forEach((coluna: [Aresta | null, number], colIndex: number) => {
             if (coluna[1] !== 0) {
               mergedMatrix[rowIndex][colIndex] = coluna;
             }
@@ -798,7 +894,7 @@ export class Main {
       if (visitedPathIndex === 0) {
         const areEdgesAvaiable: boolean[] = [];
         for (const edge of edges) {
-          const isEdgeAvaiable = !visitedNodes.includes(edge);
+          const isEdgeAvaiable = !visitedNodes.includes(edge.getTarget());
           areEdgesAvaiable.push(isEdgeAvaiable);
         }
 
@@ -819,16 +915,16 @@ export class Main {
       const newVisitedIndex = nodePath.indexOf(grafo);
 
       for (const edge of edges) {
-        if (!visitedNodes.includes(edge)) {
-          treeEdges.push([grafo, edge]);
-          search(edge);
+        if (!visitedNodes.includes(edge.getTarget())) {
+          treeEdges.push([grafo, edge.getTarget()]);
+          search(edge.getTarget());
           return;
         } else if (
-          visitedNodes.includes(edge) &&
-          newVisitedIndex - nodePath.indexOf(edge) > 1 &&
-          nodePath[newVisitedIndex - 1] !== edge
+          visitedNodes.includes(edge.getTarget()) &&
+          newVisitedIndex - nodePath.indexOf(edge.getTarget()) > 1 &&
+          nodePath[newVisitedIndex - 1] !== edge.getTarget()
         ) {
-          returnEdges.push([grafo, edge]);
+          returnEdges.push([grafo, edge.getTarget()]);
         }
       }
 
@@ -894,8 +990,8 @@ export class Main {
         const arestas = [...grafo.getArestasAdj()];
         console.log(arestas);
         for (const aresta of arestas) {
-          if (aresta == nodeToRemove) {
-            grafo.removeArestaUnidirecional(nodeToRemove);
+          if (aresta.getTarget() == nodeToRemove) {
+            grafo.removeArestaUnidirecional(aresta);
           }
         }
       }

@@ -8,10 +8,11 @@ import {
 } from "@antv/graphin";
 import { Main } from "@/model/Main";
 import { ContextMenu as ContextMenuComponent } from "@antv/graphin-components";
-import { EditOutlined } from "@ant-design/icons";
 import { useContext } from "react";
 import { FloatButton, App, Menu as MenuComponent } from "antd";
 import {
+  EditOutlined,
+  PlusCircleFilled,
   ExpandOutlined,
   ArrowRightOutlined,
   ArrowLeftOutlined,
@@ -19,9 +20,13 @@ import {
   CloseOutlined,
   ScissorOutlined,
   NodeIndexOutlined,
+  ForwardOutlined,
+  BackwardOutlined,
 } from "@ant-design/icons";
 import { Item } from "@antv/graphin-components/lib/ContextMenu/Menu";
 import { useGrafos } from "@/hooks/useGrafos";
+import { Aresta } from "@/model/Aresta";
+import { useTime } from "@/hooks/useTime";
 
 const { Tooltip, ContextMenu } = Components;
 
@@ -42,6 +47,7 @@ export const HandleGraph = ({ verticeName }: Props) => {
   const { message } = App.useApp();
   const { apis, graph } = useContext(GraphinContext);
   const { grafos, handleUpdateGrafo } = useGrafos();
+  const { sliderValue } = useTime();
   const nodes = graph.getNodes();
   const edges = graph.getEdges();
 
@@ -65,7 +71,59 @@ export const HandleGraph = ({ verticeName }: Props) => {
       (vertice) => vertice.getIndice() === parseInt(target)
     );
     if (sourceVertice && targetVertice) {
-      sourceVertice.removeArestaUnidirecional(targetVertice);
+      const aresta = sourceVertice.getArestasAdj().find((aresta) => {
+        return aresta.getTarget().getIndice() === targetVertice.getIndice();
+      }) as Aresta;
+      message.info(`Aresta ${aresta.getName()} removida.`);
+      sourceVertice.removeArestaUnidirecional(aresta);
+
+      handleUpdateGrafo();
+    }
+  };
+
+  const handleEditEdgeName = (data: IUserEdge) => {
+    const { source, target } = data;
+    const sourceVertice = grafos.find(
+      (vertice) => vertice.getIndice() === parseInt(source)
+    );
+    const targetVertice = grafos.find(
+      (vertice) => vertice.getIndice() === parseInt(target)
+    );
+    if (sourceVertice && targetVertice) {
+      const aresta = sourceVertice.getArestasAdj().find((aresta) => {
+        return aresta.getTarget().getIndice() === targetVertice.getIndice();
+      }) as Aresta;
+      message.info(
+        `Nome da aresta ${aresta.getName()} alterado para ${verticeName}.`
+      );
+      aresta.setName(verticeName);
+      handleUpdateGrafo();
+    }
+  };
+
+  const handleEditEdgePeso = (data: IUserEdge) => {
+    const peso = Number(verticeName);
+
+    if (isNaN(peso) || peso < 0) {
+      message.error("Peso precisa ser um número positivo!");
+      return;
+    }
+
+    const { source, target } = data;
+    const sourceVertice = grafos.find(
+      (vertice) => vertice.getIndice() === parseInt(source)
+    );
+    const targetVertice = grafos.find(
+      (vertice) => vertice.getIndice() === parseInt(target)
+    );
+    if (sourceVertice && targetVertice) {
+      const aresta = sourceVertice.getArestasAdj().find((aresta) => {
+        return aresta.getTarget().getIndice() === targetVertice.getIndice();
+      }) as Aresta;
+      message.info(
+        `Peso da aresta ${aresta.getName()} alterado de ${aresta.getPeso()} para ${peso}.`
+      );
+      aresta.setPeso(peso);
       handleUpdateGrafo();
     }
   };
@@ -77,6 +135,7 @@ export const HandleGraph = ({ verticeName }: Props) => {
     );
     if (vertice) {
       main.completeRemoveNodeFromGraph(vertice, grafos);
+      message.info(`Vértice ${vertice.getName()} removido.`);
       handleUpdateGrafo();
     }
   };
@@ -87,6 +146,11 @@ export const HandleGraph = ({ verticeName }: Props) => {
       case "remove-edge":
         handleRemoveEdge(data);
         break;
+      case "edit-edge-name":
+        handleEditEdgeName(data);
+        break;
+      case "edit-edge-peso":
+        handleEditEdgePeso(data);
       default:
         break;
     }
@@ -137,9 +201,27 @@ export const HandleGraph = ({ verticeName }: Props) => {
       );
       if (sourceVertice) {
         if (!order) {
-          sourceVertice.addArestaBidirecional(sourceVertice);
+          sourceVertice.addArestaBidirecional(
+            new Aresta(
+              `${sourceVertice.getName()} -> ${sourceVertice.getName()}`,
+              1,
+              sourceVertice
+            )
+          );
+          message.info(
+            `Aresta ${sourceVertice.getName()} -> ${sourceVertice.getName()} adicionada.`
+          );
         } else {
-          sourceVertice.addArestaUnidirecional(sourceVertice);
+          sourceVertice.addArestaUnidirecional(
+            new Aresta(
+              `${sourceVertice.getName()} -> ${sourceVertice.getName()}`,
+              1,
+              sourceVertice
+            )
+          );
+          message.info(
+            `Aresta ${sourceVertice.getName()} -> ${sourceVertice.getName()} adicionada.`
+          );
         }
         handleUpdateGrafo();
       }
@@ -166,9 +248,30 @@ export const HandleGraph = ({ verticeName }: Props) => {
 
     if (sourceVertice && targetVertice) {
       if (!order) {
-        sourceVertice.addArestaBidirecional(targetVertice);
+        sourceVertice.addArestaBidirecional(
+          new Aresta(
+            `${sourceVertice.getName()} -> ${targetVertice.getName()}`,
+            1,
+            targetVertice
+          )
+        );
+        message.info(
+          `Aresta ${sourceVertice.getName()} -> ${targetVertice.getName()} adicionada.`
+        );
+        message.info(
+          `Aresta ${targetVertice.getName()} -> ${sourceVertice.getName()} adicionada.`
+        );
       } else {
-        sourceVertice.addArestaUnidirecional(targetVertice);
+        sourceVertice.addArestaUnidirecional(
+          new Aresta(
+            `${sourceVertice.getName()} -> ${targetVertice.getName()}`,
+            1,
+            targetVertice
+          )
+        );
+        message.info(
+          `Aresta ${sourceVertice.getName()} -> ${targetVertice.getName()} adicionada.`
+        );
       }
       handleUpdateGrafo();
     }
@@ -204,13 +307,13 @@ export const HandleGraph = ({ verticeName }: Props) => {
 
       if (sourceVertice && targetVertice) {
         try {
-          const path = main.findCaminho(sourceVertice, targetVertice);
+          const { nodePath } = main.findCaminho(sourceVertice, targetVertice);
 
           const formmatedEdgePath: string[] = [];
 
-          for (let i = 1; i < path.length; i++) {
-            const source = path[i - 1];
-            const target = path[i];
+          for (let i = 1; i < nodePath.length; i++) {
+            const source = nodePath[i - 1];
+            const target = nodePath[i];
             const edge = edges.find(
               (edge) =>
                 edge.getSource().getModel().id ===
@@ -220,17 +323,102 @@ export const HandleGraph = ({ verticeName }: Props) => {
             formmatedEdgePath.push(edge?._cfg?.model?.id as string);
           }
 
-          const formmatedNodePath = path.map((vertice) => {
-            const node = nodes.find(
-              (node) => node.getModel().id === vertice.getIndice().toString()
-            );
-            return node?.getID();
-          }).filter((node) => node) as string[];
-          
-          handleShowPath({ nodes: formmatedNodePath, edges: formmatedEdgePath });
+          const formmatedNodePath = nodePath
+            .map((vertice) => {
+              const node = nodes.find(
+                (node) => node.getModel().id === vertice.getIndice().toString()
+              );
+              return node?.getID();
+            })
+            .filter((node) => node) as string[];
+
+          handleShowPath({
+            nodes: formmatedNodePath,
+            edges: formmatedEdgePath,
+          });
           message.success("Caminho encontrado", () => {
             handleClear({ nodes: formmatedNodePath, edges: formmatedEdgePath });
           });
+        } catch (error) {
+          if (error instanceof Error) {
+            message.error(error.message);
+          }
+        }
+      }
+    }
+  };
+
+  const showStepsBetweenNodes = (
+    itemProps: ContextMenuValue,
+    order?: "ascending" | "descending"
+  ) => {
+    const formmatedNodes = getNodes(itemProps);
+
+    if (formmatedNodes.length != 2) {
+      message.error("Selecione 2 vértices");
+      return;
+    } else {
+      let [source, target] = formmatedNodes;
+
+      if (order === "descending") {
+        [source, target] = [target, source];
+      } else {
+        [source, target] = [source, target];
+      }
+
+      const { id: sourceId } = source;
+      const { id: targetId } = target;
+
+      const sourceVertice = grafos.find(
+        (vertice) => vertice.getIndice() === parseInt(sourceId)
+      );
+      const targetVertice = grafos.find(
+        (vertice) => vertice.getIndice() === parseInt(targetId)
+      );
+
+      if (sourceVertice && targetVertice) {
+        try {
+          const { realPath } = main.findCaminho(sourceVertice, targetVertice);
+
+          message.success("Caminho encontrado, exibindo passos.");
+
+          for (let j = 1; j < realPath.length; j++) {
+            const source = realPath[j - 1];
+            const target = realPath[j];
+
+            const edge = edges.find(
+              (edge) =>
+                edge.getSource().getModel().id ===
+                  source.getIndice().toString() &&
+                edge.getTarget().getModel().id === target.getIndice().toString()
+            );
+
+            const actualEdgePath = [edge?._cfg?.model?.id] as string[];
+
+            const actualNodePath = [source, target]
+              .map((vertice) => {
+                const node = nodes.find(
+                  (node) =>
+                    node.getModel().id === vertice.getIndice().toString()
+                );
+                return node?.getID();
+              })
+              .filter((node) => node) as string[];
+
+            setTimeout(() => {
+              handleShowPath({
+                nodes: actualNodePath,
+                edges: actualEdgePath,
+              });
+            }, j * 100 * (sliderValue || 1));
+
+            setTimeout(() => {
+              handleClear({
+                nodes: actualNodePath,
+                edges: actualEdgePath,
+              });
+            }, (j + 1) * 100 * (sliderValue || 1));
+          }
         } catch (error) {
           if (error instanceof Error) {
             message.error(error.message);
@@ -305,6 +493,16 @@ export const HandleGraph = ({ verticeName }: Props) => {
               icon: <ScissorOutlined />,
               name: "Remover Aresta",
             },
+            {
+              key: "edit-edge-name",
+              icon: <EditOutlined />,
+              name: "Editar Nome",
+            },
+            {
+              key: "edit-edge-peso",
+              icon: <PlusCircleFilled />,
+              name: "Mudar Peso",
+            },
           ]}
           onChange={(item, data) => {
             handleEdgeUpdate(data, item);
@@ -359,6 +557,22 @@ export const HandleGraph = ({ verticeName }: Props) => {
                     showPathBetweenNodes(itemProps, "descending");
                   },
                 },
+                {
+                  key: "show-steps-ascending",
+                  icon: <ForwardOutlined />,
+                  label: "Mostrar Passos (Ida)",
+                  onClick: () => {
+                    showStepsBetweenNodes(itemProps, "ascending");
+                  },
+                },
+                {
+                  key: "show-steps-descending",
+                  icon: <BackwardOutlined />,
+                  label: "Mostrar Passos (Volta)",
+                  onClick: () => {
+                    showStepsBetweenNodes(itemProps, "descending");
+                  },
+                },
               ]}
             />
           );
@@ -390,6 +604,25 @@ export const HandleGraph = ({ verticeName }: Props) => {
               }
             }
             return null;
+          }
+          return null;
+        }}
+      </Tooltip>
+      <Tooltip
+        bindType="edge"
+        placement={"top"}
+        hasArrow={false}
+        style={{
+          backgroundColor: "white",
+          borderRadius: "1rem",
+          padding: "1rem",
+          width: "fit-content",
+        }}
+      >
+        {(value: TooltipValue) => {
+          if (value.model) {
+            const { model } = value;
+            return <div key={value.id}>Peso: {model.weight as number}</div>;
           }
           return null;
         }}

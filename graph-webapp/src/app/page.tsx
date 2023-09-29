@@ -8,6 +8,7 @@ import {
   List,
   Menu,
   Popover,
+  Row,
   Space,
   Typography,
 } from "antd";
@@ -24,19 +25,24 @@ import { Grafo } from "@/model/Grafo";
 import { GrafoContext, useGrafos } from "@/hooks/useGrafos";
 import { HEADER_OPTIONS } from "@/constants/header-options";
 import { HELP_DATA, IHelpData } from "@/constants/help-data";
+import StepSlider from "@/components/StepSlider";
+import { TimeContext, useTime } from "@/hooks/useTime";
 
 const { Header, Content, Sider } = Layout;
 
 const Page = () => {
+  const { message } = App.useApp();
   const [layoutType, setLayoutType] = useState("preset");
   const [verticeName, setVerticeName] = useState("v5");
   const [collapsed, setCollapsed] = useState(true);
+  const { sliderValue, setSliderValue } = useTime();
   const { grafos, handleUpdateGrafo } = useGrafos();
 
   const handleAddNode = (verticeName: string) => {
     const newIndice = grafos.length;
     const newGrafo = new Grafo(newIndice, verticeName);
     grafos.push(newGrafo);
+    message.info(`Vértice ${newGrafo.getName()} adicionado.`);
     handleUpdateGrafo();
   };
 
@@ -65,31 +71,34 @@ const Page = () => {
             marginTop: "2rem",
             flexDirection: "column",
             padding: "0 1.5rem",
-            minHeight: '100%',
+            minHeight: "100%",
             gap: "1rem",
             paddingBottom: "4rem",
           }}
         >
-          <div style={{ display: "flex", gap: "1rem" }}>
-            {!collapsed && (
-              <Input
-                placeholder={"v5"}
-                value={verticeName}
-                onChange={(e) => {
-                  setVerticeName(e.currentTarget.value);
+          <Row style={{ gap: "1rem" }}>
+            <Space>
+              {!collapsed && (
+                <Input
+                  placeholder={"v5"}
+                  value={verticeName}
+                  onChange={(e) => {
+                    setVerticeName(e.currentTarget.value);
+                  }}
+                  style={{ backgroundColor: "#e7ecef" }}
+                />
+              )}
+              <Button
+                shape="circle"
+                onClick={() => {
+                  handleAddNode(verticeName);
                 }}
-                style={{ backgroundColor: "#e7ecef" }}
-              />
-            )}
-            <Button
-              shape="circle"
-              onClick={() => {
-                handleAddNode(verticeName);
-              }}
-            >
-              <PlusOutlined />
-            </Button>
-          </div>
+              >
+                <PlusOutlined />
+              </Button>
+            </Space>
+            <StepSlider collapsed={collapsed} />
+          </Row>
           <Button
             icon={<GithubOutlined />}
             shape="default"
@@ -158,9 +167,11 @@ const Page = () => {
 export default function Home() {
   return (
     <App className="layout">
-      <GrafoContext>
-        <Page />
-      </GrafoContext>
+      <TimeContext>
+        <GrafoContext>
+          <Page />
+        </GrafoContext>
+      </TimeContext>
     </App>
   );
 }
