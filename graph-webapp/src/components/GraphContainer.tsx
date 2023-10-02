@@ -4,6 +4,8 @@ import Graphin, { Behaviors, Utils } from "@antv/graphin";
 import { useGrafos } from "@/hooks/useGrafos";
 import { HandleGraph } from "./HandleGraph";
 
+const { ZoomCanvas } = Behaviors;
+
 type Props = {
   layoutType: string;
   verticeName: string;
@@ -47,9 +49,8 @@ const GraphContainer = ({ verticeName, layoutType }: Props) => {
       maxStep={10}
       maxZoom={2}
     >
-      <HandleGraph
-        verticeName={verticeName}
-      />
+      <ZoomCanvas enableOptimize />
+      <HandleGraph verticeName={verticeName} />
     </Graphin>
   );
 };

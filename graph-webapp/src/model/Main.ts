@@ -2,6 +2,108 @@ import { Aresta } from "./Aresta";
 import { Estruturas, Grafo } from "./Grafo";
 
 export class Main {
+  public findShortestPath(
+    start: Grafo,
+    end: Grafo,
+    vertices: Grafo[]
+  ): {
+    nodePath: { node: Grafo; distance: number }[];
+    realPath: { node: Grafo; distance: number }[];
+  } {
+    const nodePath: { node: Grafo; distance: number }[] = [];
+    const realPath: { node: Grafo; distance: number }[] = [];
+
+    const distanciaMinima: Record<string, number> = {}; // Usando um objeto simples
+    const predecessores: Record<string, Grafo | null> = {}; // Rastreia os predecessores dos vértices
+
+    const visitados = new Set<Grafo>();
+
+    for (const vertice of vertices) {
+      distanciaMinima[vertice.getName()] = Infinity;
+      predecessores[vertice.getName()] = null;
+    }
+    distanciaMinima[start.getName()] = 0;
+
+    while (!visitados.has(end)) {
+      let verticeAtual: Grafo | null = null;
+      let distanciaMinAtual: number = Infinity;
+
+      // Encontra o vértice não visitado com a menor distância mínima.
+      for (const vertice of vertices) {
+        if (
+          !visitados.has(vertice) &&
+          distanciaMinima[vertice.getName()] < distanciaMinAtual
+        ) {
+          verticeAtual = vertice;
+          distanciaMinAtual = distanciaMinima[vertice.getName()];
+        }
+      }
+
+      if (verticeAtual === null) {
+        break; // Não há mais vértices acessíveis
+      }
+
+      visitados.add(verticeAtual);
+      nodePath.push({ node: verticeAtual, distance: distanciaMinAtual });
+
+      // Atualiza as distâncias mínimas para os vizinhos não visitados.
+      for (const aresta of verticeAtual.getArestasAdj()) {
+        const vizinho = aresta.getTarget();
+        if (!visitados.has(vizinho)) {
+          const novaDistancia = distanciaMinAtual + aresta.getPeso();
+          if (novaDistancia < distanciaMinima[vizinho.getName()]) {
+            distanciaMinima[vizinho.getName()] = novaDistancia;
+            predecessores[vizinho.getName()] = verticeAtual;
+          }
+        }
+      }
+    }
+
+    // Reconstrua o caminho mínimo.
+    let verticeCaminho: Grafo | null = end;
+    while (verticeCaminho !== null) {
+      realPath.unshift({
+        node: verticeCaminho,
+        distance: distanciaMinima[verticeCaminho.getName()],
+      });
+      verticeCaminho = predecessores[verticeCaminho.getName()];
+    }
+
+    let currentDistanceRealPath = 0;
+    for (let i = 0; i < realPath.length; i++) {
+      realPath[i] = {
+        ...realPath[i],
+        distance: realPath[i].distance - currentDistanceRealPath,
+      };
+      currentDistanceRealPath += realPath[i].distance;
+    }
+
+    let currentDistanceNodePath = 0;
+    for (let i = 0; i < nodePath.length; i++) {
+      nodePath[i] = {
+        ...nodePath[i],
+        distance: nodePath[i].distance - currentDistanceNodePath,
+      };
+      currentDistanceNodePath += nodePath[i].distance;
+    }
+
+    const isNotCaminho =
+      !nodePath.map((step) => step.node).includes(start) ||
+      !nodePath.map((step) => step.node).includes(end);
+
+    if (isNotCaminho) {
+      throw new Error(
+        "Não existe um caminho do vértice " +
+          start.getName() +
+          " ao vértice " +
+          end.getName() +
+          "!"
+      );
+    }
+
+    return { nodePath, realPath };
+  }
+
   public getGrauDirecionado(grafos: Grafo[], vertice: Grafo): number {
     const isVerticeInGrafo = grafos.includes(vertice);
 
@@ -31,7 +133,10 @@ export class Main {
     return grau;
   }
 
-  public findCaminho(x: Grafo, v: Grafo): {nodePath: Grafo[], realPath: Grafo[]} {
+  public findCaminho(
+    x: Grafo,
+    v: Grafo
+  ): { nodePath: Grafo[]; realPath: Grafo[] } {
     const start = x;
     const end = v;
 
@@ -110,7 +215,7 @@ export class Main {
       );
     }
 
-    return {nodePath, realPath};
+    return { nodePath, realPath };
   }
 
   public findPasseio(x: Grafo, v: Grafo): Grafo[] {
@@ -668,7 +773,7 @@ export class Main {
         grafo.addArestaUnidirecional(
           new Aresta(
             `${grafo.getName()} -> ${randomGrafo.getName()}`,
-            1,
+            Math.floor(Math.random() * 100),
             randomGrafo
           )
         );
@@ -676,7 +781,7 @@ export class Main {
         grafo.addArestaBidirecional(
           new Aresta(
             `${grafo.getName()} -> ${randomGrafo.getName()}`,
-            1,
+            Math.floor(Math.random() * 100),
             randomGrafo
           )
         );

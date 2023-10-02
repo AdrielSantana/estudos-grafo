@@ -32,10 +32,9 @@ const { Header, Content, Sider } = Layout;
 
 const Page = () => {
   const { message } = App.useApp();
-  const [layoutType, setLayoutType] = useState("preset");
+  const [layoutType, setLayoutType] = useState(HEADER_OPTIONS[0].value);
   const [verticeName, setVerticeName] = useState("v5");
   const [collapsed, setCollapsed] = useState(true);
-  const { sliderValue, setSliderValue } = useTime();
   const { grafos, handleUpdateGrafo } = useGrafos();
 
   const handleAddNode = (verticeName: string) => {

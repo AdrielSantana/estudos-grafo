@@ -63,7 +63,8 @@ export const HandleGraph = ({ verticeName }: Props) => {
   };
 
   const handleRemoveEdge = (data: IUserEdge) => {
-    const { source, target } = data;
+    const { source, target, weight } = data;
+    console.log(data);
     const sourceVertice = grafos.find(
       (vertice) => vertice.getIndice() === parseInt(source)
     );
@@ -72,7 +73,10 @@ export const HandleGraph = ({ verticeName }: Props) => {
     );
     if (sourceVertice && targetVertice) {
       const aresta = sourceVertice.getArestasAdj().find((aresta) => {
-        return aresta.getTarget().getIndice() === targetVertice.getIndice();
+        return (
+          aresta.getTarget().getIndice() === targetVertice.getIndice() &&
+          aresta.getPeso() === weight
+        );
       }) as Aresta;
       message.info(`Aresta ${aresta.getName()} removida.`);
       sourceVertice.removeArestaUnidirecional(aresta);
@@ -82,7 +86,7 @@ export const HandleGraph = ({ verticeName }: Props) => {
   };
 
   const handleEditEdgeName = (data: IUserEdge) => {
-    const { source, target } = data;
+    const { source, target, weight } = data;
     const sourceVertice = grafos.find(
       (vertice) => vertice.getIndice() === parseInt(source)
     );
@@ -91,7 +95,10 @@ export const HandleGraph = ({ verticeName }: Props) => {
     );
     if (sourceVertice && targetVertice) {
       const aresta = sourceVertice.getArestasAdj().find((aresta) => {
-        return aresta.getTarget().getIndice() === targetVertice.getIndice();
+        return (
+          aresta.getTarget().getIndice() === targetVertice.getIndice() &&
+          aresta.getPeso() === weight
+        );
       }) as Aresta;
       message.info(
         `Nome da aresta ${aresta.getName()} alterado para ${verticeName}.`
@@ -109,7 +116,7 @@ export const HandleGraph = ({ verticeName }: Props) => {
       return;
     }
 
-    const { source, target } = data;
+    const { source, target, weight } = data;
     const sourceVertice = grafos.find(
       (vertice) => vertice.getIndice() === parseInt(source)
     );
@@ -118,7 +125,10 @@ export const HandleGraph = ({ verticeName }: Props) => {
     );
     if (sourceVertice && targetVertice) {
       const aresta = sourceVertice.getArestasAdj().find((aresta) => {
-        return aresta.getTarget().getIndice() === targetVertice.getIndice();
+        return (
+          aresta.getTarget().getIndice() === targetVertice.getIndice() &&
+          aresta.getPeso() === weight
+        );
       }) as Aresta;
       message.info(
         `Peso da aresta ${aresta.getName()} alterado de ${aresta.getPeso()} para ${peso}.`
@@ -307,26 +317,35 @@ export const HandleGraph = ({ verticeName }: Props) => {
 
       if (sourceVertice && targetVertice) {
         try {
-          const { nodePath } = main.findCaminho(sourceVertice, targetVertice);
+          const tempoInicial = performance.now()
+          const { realPath } = main.findShortestPath(
+            sourceVertice,
+            targetVertice,
+            grafos
+          );
+          const tempoFinal = performance.now()
 
           const formmatedEdgePath: string[] = [];
 
-          for (let i = 1; i < nodePath.length; i++) {
-            const source = nodePath[i - 1];
-            const target = nodePath[i];
+          for (let i = 1; i < realPath.length; i++) {
+            const source = realPath[i - 1];
+            const target = realPath[i];
             const edge = edges.find(
               (edge) =>
                 edge.getSource().getModel().id ===
-                  source.getIndice().toString() &&
-                edge.getTarget().getModel().id === target.getIndice().toString()
+                  source.node.getIndice().toString() &&
+                edge.getTarget().getModel().id ===
+                  target.node.getIndice().toString() &&
+                edge.getModel().weight === target.distance
             );
             formmatedEdgePath.push(edge?._cfg?.model?.id as string);
           }
 
-          const formmatedNodePath = nodePath
+          const formmatedNodePath = realPath
             .map((vertice) => {
               const node = nodes.find(
-                (node) => node.getModel().id === vertice.getIndice().toString()
+                (node) =>
+                  node.getModel().id === vertice.node.getIndice().toString()
               );
               return node?.getID();
             })
@@ -336,9 +355,24 @@ export const HandleGraph = ({ verticeName }: Props) => {
             nodes: formmatedNodePath,
             edges: formmatedEdgePath,
           });
-          message.success("Caminho encontrado", () => {
-            handleClear({ nodes: formmatedNodePath, edges: formmatedEdgePath });
-          });
+
+          const distance = realPath.reduce((acc, curr) => {
+            return acc + curr.distance;
+          }, 0);
+
+          const tempoGasto = tempoFinal - tempoInicial
+
+          message.success(
+            `Caminho encontrado, a distância mínima do vértice ${realPath[0].node.getName()} até o vértice ${realPath[
+              realPath.length - 1
+            ].node.getName()} é ${distance}. O Algorítmo gastou ${tempoGasto.toFixed(2)} milissegundos para encontrar o resultado`,
+            () => {
+              handleClear({
+                nodes: formmatedNodePath,
+                edges: formmatedEdgePath,
+              });
+            }
+          );
         } catch (error) {
           if (error instanceof Error) {
             message.error(error.message);
@@ -378,20 +412,25 @@ export const HandleGraph = ({ verticeName }: Props) => {
 
       if (sourceVertice && targetVertice) {
         try {
-          const { realPath } = main.findCaminho(sourceVertice, targetVertice);
+          const { nodePath } = main.findShortestPath(
+            sourceVertice,
+            targetVertice,
+            grafos
+          );
 
-          message.success("Caminho encontrado, exibindo passos.");
+          for (let j = 1; j < nodePath.length; j++) {
+            const source = nodePath[j - 1];
+            const target = nodePath[j];
 
-          for (let j = 1; j < realPath.length; j++) {
-            const source = realPath[j - 1];
-            const target = realPath[j];
-
-            const edge = edges.find(
-              (edge) =>
+            const edge = edges.find((edge) => {
+              return (
                 edge.getSource().getModel().id ===
-                  source.getIndice().toString() &&
-                edge.getTarget().getModel().id === target.getIndice().toString()
-            );
+                  source.node.getIndice().toString() &&
+                edge.getTarget().getModel().id ===
+                  target.node.getIndice().toString() &&
+                edge.getModel().weight === target.distance
+              );
+            });
 
             const actualEdgePath = [edge?._cfg?.model?.id] as string[];
 
@@ -399,7 +438,7 @@ export const HandleGraph = ({ verticeName }: Props) => {
               .map((vertice) => {
                 const node = nodes.find(
                   (node) =>
-                    node.getModel().id === vertice.getIndice().toString()
+                    node.getModel().id === vertice.node.getIndice().toString()
                 );
                 return node?.getID();
               })
@@ -419,6 +458,7 @@ export const HandleGraph = ({ verticeName }: Props) => {
               });
             }, (j + 1) * 100 * (sliderValue || 1));
           }
+          message.success("Caminho encontrado, exibindo passos.");
         } catch (error) {
           if (error instanceof Error) {
             message.error(error.message);

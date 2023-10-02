@@ -1,14 +1,17 @@
 import { Grafo } from "@/model/Grafo";
 import { Main } from "@/model/Main";
+import { buildings } from "./data/buildings";
 
-const vertice0 = new Grafo(0, "v0");
-const vertice1 = new Grafo(1, "v1");
-const vertice2 = new Grafo(2, "v2");
-const vertice3 = new Grafo(3, "v3");
-const vertice4 = new Grafo(4, "v4");
+const grafos: Grafo[] = [];
 
-const main = new Main()
+buildings.features.forEach((feature, index) => {
+  if (feature.properties.name) {
+    grafos.push(new Grafo(index, feature.properties.name));
+  }
+});
 
-export const initialGraph = [vertice0, vertice1, vertice2, vertice3, vertice4];
+const main = new Main();
 
-main.addRandomArestas(initialGraph)
+main.addRandomArestas(grafos);
+
+export const initialGraph = grafos;
