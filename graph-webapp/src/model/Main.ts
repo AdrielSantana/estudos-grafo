@@ -19,10 +19,10 @@ export class Main {
     const visitados = new Set<Grafo>();
 
     for (const vertice of vertices) {
-      distanciaMinima[vertice.getName()] = Infinity;
-      predecessores[vertice.getName()] = null;
+      distanciaMinima[vertice.getIndice()] = Infinity;
+      predecessores[vertice.getIndice()] = null;
     }
-    distanciaMinima[start.getName()] = 0;
+    distanciaMinima[start.getIndice()] = 0;
 
     while (!visitados.has(end)) {
       let verticeAtual: Grafo | null = null;
@@ -32,10 +32,10 @@ export class Main {
       for (const vertice of vertices) {
         if (
           !visitados.has(vertice) &&
-          distanciaMinima[vertice.getName()] < distanciaMinAtual
+          distanciaMinima[vertice.getIndice()] < distanciaMinAtual
         ) {
           verticeAtual = vertice;
-          distanciaMinAtual = distanciaMinima[vertice.getName()];
+          distanciaMinAtual = distanciaMinima[vertice.getIndice()];
         }
       }
 
@@ -51,9 +51,9 @@ export class Main {
         const vizinho = aresta.getTarget();
         if (!visitados.has(vizinho)) {
           const novaDistancia = distanciaMinAtual + aresta.getPeso();
-          if (novaDistancia < distanciaMinima[vizinho.getName()]) {
-            distanciaMinima[vizinho.getName()] = novaDistancia;
-            predecessores[vizinho.getName()] = verticeAtual;
+          if (novaDistancia < distanciaMinima[vizinho.getIndice()]) {
+            distanciaMinima[vizinho.getIndice()] = novaDistancia;
+            predecessores[vizinho.getIndice()] = verticeAtual;
           }
         }
       }
@@ -64,9 +64,9 @@ export class Main {
     while (verticeCaminho !== null) {
       realPath.unshift({
         node: verticeCaminho,
-        distance: distanciaMinima[verticeCaminho.getName()],
+        distance: distanciaMinima[verticeCaminho.getIndice()],
       });
-      verticeCaminho = predecessores[verticeCaminho.getName()];
+      verticeCaminho = predecessores[verticeCaminho.getIndice()];
     }
 
     let currentDistanceRealPath = 0;
